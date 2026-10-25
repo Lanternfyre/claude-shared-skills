@@ -5,12 +5,12 @@ description: Raise a decision or a surprise with the operator through Beads and 
 
 # Raising a question or a surprise
 
-`$ID` is the bead you are working on, `$ROLE` is `$BEADWORK_ROLE` (or `operator`). The project's instructions (CLAUDE.md, `.beads/PRIME.md`) win over this skill.
+`<id>` is the bead you are working on. `<role>` is the role in the session-start status line, or `operator` if the line names none. Write commands literally, with the placeholders filled in; the permission check refuses shell variables and `$(…)`. The project's instructions (CLAUDE.md, `.beads/PRIME.md`) win over this skill.
 
 ## 1. Surprise or decision?
 
 - **Surprise:** a bug, a missing fact or a broken assumption outside your bead. File it, then carry on unless it blocks you:
-  `bd create -t bug -l surprise --deps discovered-from:$ID --body-file s.md --validate --silent`
+  `bd create -t bug -l surprise --deps discovered-from:<id> --body-file s.md --validate --silent`
   A bug's Steps to Reproduce is a Given/When/Then scenario that fails today.
 - **Decision:** a choice with more than one reasonable answer that the operator owns. A code-level choice with an obvious convention is not a question: decide it and say so in the PR.
 - **Undefined or ambiguous domain term:** a decision with `topic:glossary`. The answer goes into `docs/domain/glossary.md`.
@@ -33,10 +33,11 @@ description: Raise a decision or a surprise with the operator through Beads and 
 The body has the sections Question (plain words), Options, Recommendation, Default, If overturned and Level. It is not an epic child. auq ids go in metadata, never in the text.
 
 ```bash
-QID=$(bd create --title "<the question, in plain words>" -t decision --silent \
-  -l human,default-ok,"asked-by:$ROLE",level:2,topic:<area> \
-  --deps "discovered-from:$ID" --body-file q.md --validate)
+bd create --title "<the question, in plain words>" -t decision --silent \
+  -l human,default-ok,asked-by:<role>,level:2,topic:<area> \
+  --deps discovered-from:<id> --body-file q.md --validate
 ```
+It prints the new bead's id; that is `<qid>` below.
 
 ## 4. Write the card (auq `ask_user_questions`)
 
@@ -59,20 +60,20 @@ The visible text is for someone on a phone who has forgotten everything:
 
 The session-start line says which it is (`BEADWORK_TZ`, `BEADWORK_DAY`; default Europe/Warsaw, 08–23).
 
-- **Day:** post the card. If the project says a steward posts cards, store it instead with `bd update $QID --set-metadata "auq_card=$(jq -c . card.json)"`. Record the ids: `bd update $QID --set-metadata auq_question_id=<ids> --set-metadata auq_thread_id=<id>`. Wait up to 30 min. On `pending`, run `auq await <ids> --max-secs 1800` in the background. No answer means night handling.
+- **Day:** post the card. If the project says a steward posts cards, store it instead with `bd update <qid> --set-metadata 'auq_card=<the card JSON on one line>'`. Record the ids: `bd update <qid> --set-metadata auq_question_id=<ids> --set-metadata auq_thread_id=<id>`. Wait up to 30 min. On `pending`, run `auq await <ids> --max-secs 1800` in the background. No answer means night handling.
 - **Night, or unanswered:**
-  - **default-ok:** proceed on the default, run `bd label add $QID provisional`, and name it in the PR body.
+  - **default-ok:** proceed on the default, run `bd label add <qid> provisional`, and name it in the PR body.
   - **must-ask:** park the bead:
     ```bash
-    git push origin "HEAD:bead/$ID-wip"
-    bd dep add "$ID" "$QID"
-    bd unclaim "$ID" --reason "waiting on $QID"
+    git push origin HEAD:bead/<id>-wip
+    bd dep add <id> <qid>
+    bd unclaim <id> --reason "waiting on <qid>"
     ```
     Then stop its heartbeat and take the next ready bead.
 - Never re-post a question that is still live; await its ids.
 
 ## 6. When the answer arrives
 
-1. `bd human respond $QID -r "<option id>: <label>"` closes the question and unblocks parked work.
+1. `bd human respond <qid> -r "<option id>: <label>"` closes the question and unblocks parked work.
 2. Record it where it belongs: architecture → an ADR (the `adr` skill), domain rule → `docs/domain/`, requirement → its page in `docs/capabilities/` or `docs/requirements/` (the `write` skill).
-3. If it overturns a provisional default you built on, file a fix bead with `--deps discovered-from:$QID`.
+3. If it overturns a provisional default you built on, file a fix bead with `--deps discovered-from:<qid>`.

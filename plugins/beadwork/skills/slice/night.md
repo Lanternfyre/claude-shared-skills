@@ -1,6 +1,6 @@
 # Night run (unattended)
 
-- **Backlog rule:** start only with at least `${BEADWORK_NIGHT_MIN_READY:-3}` ready beads for your role, and only when the away switch is off. Otherwise, stop.
+- **Backlog rule:** start only with at least as many ready beads for your role as the session-start status line asks for ("a night run needs N ready"), and only when the away switch is off. Otherwise, stop.
 - **No cards at night.** A push at 3 am wakes the operator. File decision beads as usual and store their cards in metadata (`auq_card`); the morning grill asks them.
   - **default-ok:** proceed provisionally.
   - **must-ask:** park the bead and take the next.
@@ -8,7 +8,7 @@
 - **On stop,** file one summary for the morning grill:
 
 ```bash
-bd create -t chore -l human,morning-summary --title "Night summary $(date +%F) ${BEADWORK_ROLE:-agent}" \
+bd create -t chore -l human,morning-summary --title "Night summary <date> <role>" \
   --body-file summary.md --validate --silent
 ```
 

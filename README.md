@@ -1,9 +1,9 @@
 # claude-shared-skills
 
-A Claude Code plugin marketplace with the skills our projects share, and the [documentation standard](docs/reference/documentation-standard.md) they enforce. It is kept small on purpose: only four skill descriptions ever sit in a session's context, and everything else loads when someone runs it.
+A Claude Code plugin marketplace with the skills our projects share, and the [documentation standard](docs/reference/documentation-standard.md) they enforce. It is kept small on purpose: only four skill descriptions ever sit in a session's context, and everything else loads when someone runs it. A live session on 2026-10-25 confirmed the model sees only those four. `claude plugin details` estimates about 880 always-on tokens, but that figure also counts the operator-only skills.
 
 - **Start:** [Use it in a project](#use-it-in-a-project).
-- **Reference:** [Documentation standard](docs/reference/documentation-standard.md).
+- **Reference:** [standards and exact facts](docs/reference/README.md), starting with the documentation standard.
 - **Decisions:** [why things are the way they are](docs/decisions/README.md).
 - **Terms:** [what Beads, auq, grill and the rest mean](#terms).
 

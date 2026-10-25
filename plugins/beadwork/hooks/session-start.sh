@@ -36,7 +36,9 @@ asked=$(bd --readonly count -l human ${role:+-l "asked-by:$role"} --status open 
 review=$(bd --readonly count --status in_review 2>/dev/null || echo '?')
 away=$(bd --readonly list -l operator:away --json 2>/dev/null | jlen)
 
-echo "beadwork: $mode ($tz $(TZ=$tz date +%H:%M)) · ready $ready · open questions $asked · in review $review${role:+ · role $role}"
+night=
+[ "$mode" = night ] && night=" · a night run needs ${BEADWORK_NIGHT_MIN_READY:-3} ready"
+echo "beadwork: $mode ($tz $(TZ=$tz date +%H:%M)) · ready $ready · open questions $asked · in review $review${role:+ · role $role}$night"
 if [ "$away" != 0 ] && [ "$away" != '?' ]; then
   echo "beadwork: the operator is AWAY. Start no new bead; finish or park the current one."
 fi

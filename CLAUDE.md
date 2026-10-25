@@ -13,6 +13,7 @@ A Claude Code plugin marketplace of skills shared across our projects. Every mod
 ## Checks before a commit
 
 - `claude plugin validate .` and `claude plugin validate plugins/<name>` pass.
+- `python3 plugins/docs/scripts/docs.py check` passes.
 - Bump `version` in the changed plugin's `plugin.json`.
 - A change to `hooks/session-start.sh` is run by hand in a repo with `.beads/`, both with and without memories.
 

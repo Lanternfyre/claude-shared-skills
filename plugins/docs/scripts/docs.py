@@ -292,12 +292,24 @@ def check_code_mentions(root, defined):
                              capture_output=True, text=True, check=False).stdout
     except OSError:
         return []
-    errors = []
+    errors, prose_cache = [], {}
     for line in out.splitlines():
         place, _, ident = line.rpartition(":")
+        name, _, number = place.rpartition(":")
+        if name.endswith(".md"):
+            # Markdown outside docs/ (skills, CLAUDE.md) may show an id as an example in code.
+            if name not in prose_cache:
+                text = (root / name).read_text(encoding="utf-8")
+                prose_cache[name] = {n for n, prose in prose_lines(text) if ident_in(prose)}
+            if int(number) not in prose_cache[name]:
+                continue
         if ident not in defined:
             errors.append(f"{place}: mentions {ident}, which no page defines")
     return errors
+
+
+def ident_in(text):
+    return re.search(CODE_ID_PATTERN.replace("[0-9]", r"\d"), text) is not None
 
 
 # ---- commands ----------------------------------------------------------------------------

@@ -22,7 +22,7 @@ A wide refactor is three beads, each merging green on its own:
 3. **Edges.** A slice depends on another only if it cannot be built or verified without it, not because it "feels later". Fewer edges mean more work in parallel.
 4. **Ask once, create nothing yet.** Post the cut as one auq `tasks` card: for each slice its id, title, `required` or `optional`, deps, and `ready` or `blocked`. The `context` says what the epic delivers and your recommended order.
 5. **Create.**
-   - Create the epic if it is missing.
+   - Create the epic if it is missing ([epic.md](epic.md)).
    - Create each bead with its full sections (the `bead` skill), using `--parent <epic>`.
    - Add the edges with `bd dep add` once every bead exists.
 6. **Verify the graph you built, not the one you meant.** `bd graph <epic> --compact` must match the approved card. `bd ready` must show exactly the first slices.

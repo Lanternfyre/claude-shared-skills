@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 ## 1. Close merged work
 
-Do exactly what step 1 of the `slice` skill does under "Close merged work": run the merge check, then close every `pr-open` bead whose PRs have all merged. Beads labelled `pr-closed` go into the digest, because each one needs a decision.
+Run `${CLAUDE_PLUGIN_ROOT}/scripts/close-merged.sh`, the same sweep as step 1 of the `slice` skill. Beads labelled `pr-closed` go into the digest, because each one needs a decision. If the script exits non-zero, report `gh auth status` instead of a digest.
 
 ## 2. Collect
 

@@ -1,6 +1,6 @@
 # Night session (unattended)
 
-The night loop (`scripts/night-run.sh`, started by the homelab job) runs one fresh session per bead with `/beadwork:slice night`. Between sessions it checks the stop rules: the 06:00 cutoff, the review cap, the verify command, the role card's `night: yes`, the usage limit, and failures. **A night session does one bead, then exits.**
+The night loop (`scripts/night-run.sh`, started by the homelab job) runs one fresh session per bead with `/beadwork:slice night`. Between sessions it checks the stop rules: the 06:00 cutoff, the review cap, the verify command, the role card's `night: yes`, whether any night-ok bead is left, the usage limit, and failures. **A night session does one bead, then exits.**
 
 1. **Steps 1–2 as by day.** The stack comes first ([stack.md](stack.md)), and you read the bead's progress record and new comments. The away switch does not stop you.
 2. **Claim one night-ok bead.** Add `--label night-ok` to the claim in step 3, also when claiming a bead blocked only by your own stack. If nothing is claimable, end with `BEADWORK-NIGHT: nothing - -`.

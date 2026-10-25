@@ -107,11 +107,23 @@ Then run `/docs:init` to bring existing docs onto the layout.
 | `BEADWORK_BEAD_TIMEBOX` | `2h` | how long one night session may run before the loop parks its bead |
 | `BEADWORK_NO_MEMORIES` | `0` | `1` keeps `bd` memories out of session start |
 
-**Night runs** also read two settings from the project's Beads config:
-- `custom.beadwork-verify`: the project's verify command. There are no nights without one.
-- `custom.beadwork-review-cap`: how many PRs may wait for review before the loop stops starting beads (default 12).
+### Night runs
 
-A bead runs at night only with the `night-ok` label, which you add, and only for a role whose card says `night: yes`. The loop is [`scripts/night-run.sh`](plugins/beadwork/scripts/night-run.sh); `--dry-run` shows what it would do now and why.
+A bead is worked overnight only when all of this holds:
+- **The box has a role** (`BEADWORK_ROLE`), and that role's card says `night: yes` and names a `model`.
+- **The bead carries `role:<role>` and `night-ok`.** You add these: `bd label add <id> role:<role>`, then `bd label add <id> night-ok`. It must be ready, or blocked only by beads in the box's own [PR stack](plugins/beadwork/skills/slice/stack.md). Epics, decisions and `human` beads never run.
+- **The project has a verify command:** `bd config set custom.beadwork-verify "<command>"`. Optionally set `custom.beadwork-review-cap` (default 12).
+
+The loop is [`scripts/night-run.sh`](plugins/beadwork/scripts/night-run.sh), run inside the box in the project's checkout. A homelab scheduled job will start it at 23:05 (bead `skills-wp1.6`); until then, start it by hand. `--dry-run` shows what it would do now, and why. Between beads it stops starting new work when:
+1. it is between 06:00 and 23:00 (no new bead after the 06:00 cutoff);
+2. PRs in review reach the review cap;
+3. the project has no verify command;
+4. the box has no role, the card is missing, or the card says `night: no` or names no model;
+5. no `night-ok` bead is left for the role;
+6. a session hit the usage limit;
+7. two sessions in a row failed or ran past the two-hour time box.
+
+It also stops when Beads is unreachable. When it stops, it files a **morning-summary** bead: why it stopped, plus one line per session. A morning card bundling these with the night's held questions is still to come (bead `skills-wp1.5`). Away mode does not stop nights: it only holds questions, as at night.
 
 ## Deliberately not here
 

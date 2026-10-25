@@ -1,0 +1,20 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "claude-shared-skills",
+  "description": "Skills shared across our projects, kept small so they cost little context.",
+  "owner": {
+    "name": "Adrian Jutrowski"
+  },
+  "plugins": [
+    {
+      "name": "beadwork",
+      "source": "./plugins/beadwork",
+      "description": "Beads + auq work loop: write beads, raise questions, claim and ship slices, grill the operator, digest review chunks."
+    },
+    {
+      "name": "domain",
+      "source": "./plugins/domain",
+      "description": "Ubiquitous language and business objectives as Git docs the agents can rely on."
+    }
+  ]
+}

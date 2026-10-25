@@ -126,6 +126,8 @@ guard_pushes
 say "night starts (role $role, card $card, time box $timebox)"
 failures=0; reason=""
 while :; do
+  if ! sweep=$("$here/close-merged.sh" 2>&1); then say "$sweep"; reason="gh: cannot reach GitHub (close-merged.sh failed)"; break; fi
+  say "$sweep"
   verdict=$(check); say "$verdict"
   case "$verdict" in stop*) reason=${verdict#stop }; break ;; esac
   model=$(printf '%s' "$verdict" | sed -n 's/.*model=\([^ ]*\).*/\1/p')

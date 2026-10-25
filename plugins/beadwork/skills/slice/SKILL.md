@@ -19,18 +19,12 @@ bd --readonly ping
 bd --readonly list -l operator:away --json          # away switch: not [] means hold questions as at night; work goes on
 ```
 
-**Close merged work.** A bead under review waits behind one merge gate per pull request. When those gates resolve, the bead becomes ready again, so it must be closed before anyone claims it:
+**Close merged work.** A bead under review waits behind one merge gate per pull request. When those gates resolve, the bead becomes ready again, so it must be closed before anyone claims it. Run:
 
 ```bash
-bd gate check --type=gh                              # resolves merged PRs; reports closed-unmerged ones as escalated
-bd --readonly list -l pr-open --json
+${CLAUDE_PLUGIN_ROOT}/scripts/close-merged.sh
 ```
-For each bead listed, `bd --readonly show <id> --json` shows its gates: the dependencies with `await_type` `gh:pr`.
-- **Every gate is closed, and each `close_reason` says the PR was merged:** `bd close <id> --reason "merged: <PR URLs>"`, then `bd label remove <id> pr-open`.
-- **The check reported one of its gates as escalated** (its PR was closed without merging): `bd label remove <id> pr-open`, then `bd label add <id> pr-closed`. Leave the bead for the operator.
-- **Otherwise** it is still in review: leave it.
-
-Close only what GitHub confirms merged. Never close your own unmerged work. If the check reports **errors**, `gh` can't reach GitHub: run `gh auth status`, report what it says, and stop. Errors never mean "nothing merged".
+It runs the merge check, then closes every `pr-open` bead whose PRs have all merged. It repeats until nothing more closes, because a stack's beads close bottom-up. It removes the label only after a successful close, and flags a bead whose PR was closed unmerged as `pr-closed`, for the operator. If it exits non-zero, `gh` can't reach GitHub: run `gh auth status`, report what it says, and stop. Never close merged work by hand; the script exists because doing so went wrong.
 
 **Your stack first.** Each box keeps one stack of PRs ([stack.md](stack.md)). `gh stack view` shows it. Before taking new work, look after it:
 - **Red CI** on one of its PRs: fix it in that PR's own branch, then `gh stack rebase` and `gh stack push`.

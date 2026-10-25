@@ -31,14 +31,14 @@ if ((10#$h >= 10#${win%-*} && 10#$h < 10#${win#*-})); then mode=day; else mode=n
 role=${BEADWORK_ROLE:-}
 
 jlen() { jq length 2>/dev/null || echo '?'; }
-ready=$(bd --readonly ready ${role:+--label "role:$role"} --exclude-type epic,decision --json 2>/dev/null | jlen)
+ready=$(bd --readonly ready ${role:+--label "role:$role"} --exclude-type epic,decision --exclude-label human --json 2>/dev/null | jlen)
 asked=$(bd --readonly count -l human ${role:+-l "asked-by:$role"} --status open 2>/dev/null || echo '?')
-review=$(bd --readonly count --status in_review 2>/dev/null || echo '?')
+review=$(bd --readonly count -l pr-open 2>/dev/null || echo '?')
 away=$(bd --readonly list -l operator:away --json 2>/dev/null | jlen)
 
 night=
 [ "$mode" = night ] && night=" · a night run needs ${BEADWORK_NIGHT_MIN_READY:-3} ready"
-echo "beadwork: $mode ($tz $(TZ=$tz date +%H:%M)) · ready $ready · open questions $asked · in review $review${role:+ · role $role}$night"
+echo "beadwork: $mode ($tz $(TZ=$tz date +%H:%M)) · ready $ready · open questions $asked · PRs in review $review${role:+ · role $role}$night"
 if [ "$away" != 0 ] && [ "$away" != '?' ]; then
   echo "beadwork: the operator is AWAY. Start no new bead; finish or park the current one."
 fi

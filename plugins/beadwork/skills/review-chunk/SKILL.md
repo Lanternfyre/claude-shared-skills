@@ -8,19 +8,15 @@ disable-model-invocation: true
 
 ## 1. Close merged work
 
-Skip this step if the project has a steward that closes beads on merge.
-
-For each bead in `bd --readonly list --status in_review --json`, find its PRs:
-`gh pr list --state all --search "\"Bead: <id>\" in:body" --json number,state,mergeCommit`
-- **All merged:** `bd gate check --type=gh` (if the project uses PR gates), then `bd close <id> --reason "merged #<n> <sha>"`.
-- **Closed without merging:** `bd update <id> --status open --add-label pr-closed`.
+Do exactly what step 1 of the `slice` skill does under "Close merged work": run the merge check, then close every `pr-open` bead whose PRs have all merged. Beads labelled `pr-closed` go into the digest, because each one needs a decision.
 
 ## 2. Collect
 
+The open merge gates are the review queue:
 ```bash
-gh pr list --state open --json number,title,url,body,isDraft,additions,deletions,files,statusCheckRollup
+bd --readonly gate list --json          # each open gh:pr gate's await_id is a PR URL
 ```
-Keep the PRs whose body has a `Bead:` line and that are not drafts.
+For each PR URL: `gh pr view <PR URL> --json number,title,url,body,isDraft,additions,deletions,files,statusCheckRollup`. Skip drafts. Group PRs that belong to one stack, and review them bottom-up.
 
 ## 3. Digest each PR
 

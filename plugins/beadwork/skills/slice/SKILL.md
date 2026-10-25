@@ -1,6 +1,6 @@
 ---
 name: slice
-description: Work loop for a Beads-driven session. Claim the next ready bead, keep its lease alive, build it on a branch, verify, open the PR, hand it to review, repeat. Pass "night" for an unattended run.
+description: Work loop for a Beads-driven session. Close merged work, claim the next ready bead, keep its lease alive, build it on a branch, verify, open the PR behind a merge gate, repeat. Pass "night" for an unattended run.
 argument-hint: "[night]"
 disable-model-invocation: true
 ---
@@ -8,7 +8,7 @@ disable-model-invocation: true
 # The slice loop
 
 - If `$ARGUMENTS` is `night`, this is an unattended run: also follow [night.md](night.md).
-- Your role is in the session-start status line (`role <x>`). If the line names no role, any role's bead may be claimed. Leave out the role arguments below.
+- Your role is in the session-start status line (`role <x>`). If the line names no role, any role's bead may be claimed: leave out `--label role:<role>` and `-l asked-by:<role>` below. Never leave out `--exclude-label human`, because those beads are the operator's own work.
 - **Write commands literally.** Fill each `<placeholder>` with its value. Don't use shell variables or `${…}` expansions: the permission check refuses them.
 - The project's instructions win over this skill: its verify command, PR cap, must-ask list, who closes beads, and whether sub-agents are allowed.
 
@@ -18,6 +18,19 @@ disable-model-invocation: true
 bd --readonly ping
 bd --readonly list -l operator:away --json          # away switch: anything but [] means stop
 ```
+
+**Close merged work.** A bead under review waits behind one merge gate per pull request. When those gates resolve, the bead becomes ready again, so it must be closed before anyone claims it:
+
+```bash
+bd gate check --type=gh                              # resolves merged PRs; reports closed-unmerged ones as escalated
+bd --readonly list -l pr-open --json
+```
+For each bead listed, `bd --readonly show <id> --json` shows its gates: the dependencies with `await_type` `gh:pr`.
+- **Every gate is closed, and each `close_reason` says the PR was merged:** `bd close <id> --reason "merged: <PR URLs>"`, then `bd label remove <id> pr-open`.
+- **The check reported one of its gates as escalated** (its PR was closed without merging): `bd label remove <id> pr-open`, then `bd label add <id> pr-closed`. Leave the bead for the operator.
+- **Otherwise** it is still in review: leave it.
+
+Close only what GitHub confirms merged. Never close your own unmerged work.
 
 ## 2. Own questions first
 
@@ -30,12 +43,12 @@ bd --readonly list -t decision -l asked-by:<role> --all --json
 ## 3. Claim
 
 ```bash
-bd ready --label role:<role> --exclude-type epic,decision --claim --json
+bd ready --label role:<role> --exclude-type epic,decision --exclude-label human --claim --json
 ```
 The output is the claimed bead, or `[]`. Its `id` is `<id>` from here on.
 
 If nothing is ready for your role, never invent work. Report and stop:
-- `bd --readonly ready --exclude-type epic,decision --json`: what is ready for other roles. `--explain` ignores filters, so don't use it here.
+- `bd --readonly ready --exclude-type epic,decision --exclude-label human --json`: what is ready for other roles. `--explain` ignores filters, so don't use it here.
 - `bd --readonly blocked`: what is waiting on what.
 
 ## 4. Keep the lease
@@ -62,15 +75,21 @@ Run `while sleep 120; do bd hb <id> || break; done` as a background command. Sto
 2. Check every Acceptance Criterion and note the evidence.
 3. **Promote** what future work needs into Git docs, in this PR, with the `write` skill: architecture decisions → an ADR (the `adr` skill), constraints → `docs/architecture/`, domain rules → `docs/domain/`, terms → `docs/domain/glossary.md`. Notes that only mattered for this bead stay in the bead.
 4. **Docs impact.** Decide what the change does to the docs: contract, behaviour, data, security, operations, architecture, or internal only. If any docs page changed, finish it with the `write` skill (its check and reader walkthrough). A security or public-contract change with no matching docs is `unknown`, never `none`.
-5. `gh pr create`. The body has, in this order:
+5. `gh pr create`. If the bead needs more than one PR to stay under the size cap, stack them instead ([stack.md](stack.md)). Each PR body has, in this order:
    - `Bead: <id>`;
    - what and why, in plain words;
    - the criteria evidence;
    - any provisional defaults it relies on;
    - the `Docs impact:` line, plus `Structure:` and `Readers:` if docs changed.
-6. `bd update <id> --status in_review`, then stop the heartbeat.
-7. **Never `bd close` a work bead.** It closes when its PR merges, via the project's steward or `/beadwork:review-chunk`.
-8. Go back to step 2.
+6. **Hand it to review.** Give each PR a merge gate, then release the bead:
+   ```bash
+   bd gate create --type=gh:pr --blocks <id> --await-id <PR URL> --reason "PR #<n>"   # one per PR
+   bd label add <id> pr-open
+   bd unclaim <id> --reason "in review: <PR URL>"
+   ```
+   Then stop the heartbeat. The gates keep the bead out of `bd ready` until every PR merges. Always use the full PR URL, so the check works from any repo.
+7. **Never `bd close` unmerged work.** The bead closes after its PRs merge, at step 1 of whichever session runs next, or through the project's steward.
+8. Go back to step 1.
 
 ## Stop rules
 

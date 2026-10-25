@@ -18,7 +18,7 @@ A Claude Code plugin marketplace with the skills our projects share, and the [do
 | auq | The question inbox: agents post cards, and the operator answers from the terminal or phone |
 | Grill | One sitting where the operator answers every open question as one batch of cards |
 | Lease | A claimed bead stays claimed only while the agent keeps renewing it |
-| `in_review` | A bead whose PR is open and waiting for merge |
+| Merge gate | A Beads gate per pull request (`gh:pr`, the PR URL) that keeps the bead out of the ready list until the PR merges; such beads carry the `pr-open` label |
 | Dolt | The versioned SQL database Beads stores its data in |
 | `PRIME.md` | An optional project file in `.beads/` that Beads prints at session start, holding the project's own workflow rules |
 | Day / night | Agents ask the operator questions straight away by day; at night they queue them for the morning grill |
@@ -35,11 +35,11 @@ A Claude Code plugin marketplace with the skills our projects share, and the [do
 |---|---|---|
 | [`bead`](plugins/beadwork/skills/bead/SKILL.md): write or split a work item (Task / Guardrails / Acceptance Criteria); cut a plan into beads | agent | one description |
 | [`question`](plugins/beadwork/skills/question/SKILL.md): raise a decision or surprise; day/night handling; provisional defaults | agent | one description |
-| [`/beadwork:slice [night]`](plugins/beadwork/skills/slice/SKILL.md): claim → lease → branch → verify → PR → `in_review`; bug flow, spikes, night runs | operator or scheduler | none |
+| [`/beadwork:slice [night]`](plugins/beadwork/skills/slice/SKILL.md): close merged work → claim → lease → branch → verify → PR behind a merge gate; stacked PRs within a bead, bug flow, spikes, night runs | operator or scheduler | none |
 | [`/beadwork:grill`](plugins/beadwork/skills/grill/SKILL.md): one auq batch of every open question; record the answers; tidy memories | operator | none |
 | [`/beadwork:review-chunk`](plugins/beadwork/skills/review-chunk/SKILL.md): digest of PRs awaiting review; closes merged beads | operator | none |
 
-**Hook (SessionStart):** prints `.beads/PRIME.md` (if present), `bd` memories, and one status line: day/night, ready, open questions, in review, away. It is silent in repos without `.beads/`.
+**Hook (SessionStart):** prints `.beads/PRIME.md` (if present), `bd` memories, and one status line: day/night, ready, open questions, PRs in review, away. It is silent in repos without `.beads/`.
 
 ### `docs`: the Git side (durable knowledge)
 

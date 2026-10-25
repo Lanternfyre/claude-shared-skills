@@ -30,7 +30,16 @@ description: Raise a decision or a surprise with the operator through Beads and 
 
 ## 3. File the decision bead
 
-The body has the sections Question (plain words), Options, Recommendation, Default, If overturned and Level. It is not an epic child. auq ids go in metadata, never in the text.
+The body has these sections. The last three names are the ones bd's built-in decision lint requires.
+- **Question:** in plain words.
+- **Default:** what happens if nobody answers.
+- **If overturned:** what changes if the operator picks something else.
+- **Level:** 1 to 4.
+- **Alternatives Considered:** the options, each with its cost and what it rules out.
+- **Rationale:** your recommendation, why, and what would prove it wrong.
+- **Decision:** `Open` at filing; the answer is recorded with `bd human respond`.
+
+It is not an epic child. auq ids go in metadata, never in the text.
 
 ```bash
 bd create --title "<the question, in plain words>" -t decision --silent \
@@ -45,7 +54,7 @@ It prints the new bead's id; that is `<qid>` below.
 
 **Resolution check.** For each option, write the sentence you would act on if it were chosen. If any of those still leaves you unsure what to build, the question is too coarse: split it, or raise its level.
 
-**Falsifier.** In the bead's Recommendation, say what observation would prove the decision wrong. It carries over into the ADR.
+**Falsifier.** In the bead's Rationale, say what observation would prove the decision wrong. It carries over into the ADR.
 
 The visible text is for someone on a phone who has forgotten everything:
 - The first sentence of `context` says what changes for the operator. Then recap what happened, what you checked, and your prior: what you believe and why.

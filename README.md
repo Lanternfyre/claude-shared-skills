@@ -11,6 +11,8 @@ A Claude Code plugin marketplace with the skills our projects share, and the [do
 
 | Term | Meaning |
 |---|---|
+| Agent box | A homelab pod running one Claude Code session for one role, reachable by Remote Control |
+| Work loop | `/beadwork:slice`: close merged work, claim a bead, build it, open its PR behind a merge gate |
 | Operator | The human who decides; in most projects, the one person working with the agents |
 | Beads (`bd`) | The issue tracker for live work: beads are work items with dependencies, stored in a Dolt database ([steveyegge/beads](https://github.com/steveyegge/beads)) |
 | Decision bead | A bead holding a question for the operator: options, recommendation, default, and the answer once given |
@@ -35,7 +37,7 @@ A Claude Code plugin marketplace with the skills our projects share, and the [do
 |---|---|---|
 | [`bead`](plugins/beadwork/skills/bead/SKILL.md): write or split a work item (Task / Guardrails / Acceptance Criteria); cut a plan into beads | agent | one description |
 | [`question`](plugins/beadwork/skills/question/SKILL.md): raise a decision or surprise; day/night handling; provisional defaults | agent | one description |
-| [`/beadwork:slice [night]`](plugins/beadwork/skills/slice/SKILL.md): close merged work → claim → lease → branch → verify → PR behind a merge gate; stacked PRs within a bead, bug flow, spikes, night runs | operator or scheduler | none |
+| [`/beadwork:slice [night]`](plugins/beadwork/skills/slice/SKILL.md): close merged work → claim → lease → branch → verify → PR behind a merge gate; one PR stack per box, bug flow, spikes, night runs | operator or scheduler | none |
 | [`/beadwork:grill`](plugins/beadwork/skills/grill/SKILL.md): one auq batch of every open question; record the answers; tidy memories | operator | none |
 | [`/beadwork:review-chunk`](plugins/beadwork/skills/review-chunk/SKILL.md): digest of PRs awaiting review; closes merged beads | operator | none |
 
@@ -92,6 +94,8 @@ If a Beads web board serves the same Dolt server, add the new database to the bo
 
 Then run `/docs:init` to bring existing docs onto the layout.
 
+**Roles** (optional): an agent box runs one role, set as `BEADWORK_ROLE` in that box's own homelab values (`extraEnv`). Set per project instead, every box would get the same role. A box with a role claims only beads labelled `role:<role>`; a box without one claims any bead. Each role has a card at `.claude/roles/<role>.md`, copied from [`templates/role.md`](templates/role.md): purpose, allowed paths, model, whether it may run at night, and a never list. The [work loop](plugins/beadwork/skills/slice/SKILL.md) reads the card at the start of every bead. Before opening a PR it runs [`role-check.sh`](plugins/beadwork/scripts/role-check.sh), which lists files outside the card's paths, and opens no PR until the list is empty. This is a check the agent runs, not CI: nothing yet catches a PR opened by other means.
+
 **Environment** (project `.claude/settings.json` `env`, or the box env):
 
 | Variable | Default | Meaning |
@@ -99,8 +103,27 @@ Then run `/docs:init` to bring existing docs onto the layout.
 | `BEADWORK_ROLE` | unset (any) | `role:<x>` label to claim, and `asked-by:<x>` on questions |
 | `BEADWORK_TZ` | `Europe/Warsaw` | clock for day/night |
 | `BEADWORK_DAY` | `08-23` | day window, in hours |
-| `BEADWORK_NIGHT_MIN_READY` | `3` | a night run needs at least this many ready beads to start |
+| `BEADWORK_NIGHT_CUTOFF` | `06:00` | the night loop starts no new bead from this time until the day ends |
+| `BEADWORK_BEAD_TIMEBOX` | `2h` | how long one night session may run before the loop parks its bead |
 | `BEADWORK_NO_MEMORIES` | `0` | `1` keeps `bd` memories out of session start |
+
+### Night runs
+
+A bead is worked overnight only when all of this holds:
+- **The box has a role** (`BEADWORK_ROLE`), and that role's card says `night: yes` and names a `model`.
+- **The bead carries `role:<role>` and `night-ok`.** You add these: `bd label add <id> role:<role>`, then `bd label add <id> night-ok`. It must be ready, or blocked only by beads in the box's own [PR stack](plugins/beadwork/skills/slice/stack.md). Epics, decisions and `human` beads never run.
+- **The project has a verify command:** `bd config set custom.beadwork-verify "<command>"`. Optionally set `custom.beadwork-review-cap` (default 12).
+
+The loop is [`scripts/night-run.sh`](plugins/beadwork/scripts/night-run.sh), run inside the box in the project's checkout. A homelab scheduled job will start it at 23:05 (bead `skills-wp1.6`); until then, start it by hand. `--dry-run` shows what it would do now, and why. Between beads it stops starting new work when:
+1. it is between 06:00 and 23:00 (no new bead after the 06:00 cutoff);
+2. PRs in review reach the review cap;
+3. the project has no verify command;
+4. the box has no role, the card is missing, or the card says `night: no` or names no model;
+5. no `night-ok` bead is left for the role;
+6. a session hit the usage limit;
+7. two sessions in a row failed or ran past the two-hour time box.
+
+It also stops when Beads is unreachable. When it stops, it files a **morning-summary** bead: why it stopped, plus one line per session. A morning card bundling these with the night's held questions is still to come (bead `skills-wp1.5`). Away mode does not stop nights: it only holds questions, as at night.
 
 ## Deliberately not here
 

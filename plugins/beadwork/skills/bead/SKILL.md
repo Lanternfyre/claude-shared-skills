@@ -34,7 +34,7 @@ Empty at creation. Filled at close: PRs, CI runs, demo, benchmark deltas.
 Per type:
 - **bug:** add `## Steps to Reproduce` as a Given/When/Then scenario that fails today.
 - **spike:** add `## Variants` (2–3) and `## Measurements` (identical for every variant). Results go in the notes.
-- **epic:** `## Goal`, `## Scope`, `## Success Criteria` (the exit table) and `## Tripwires` (what stops the epic).
+- **epic:** `## Goal`, `## Scope`, `## Success Criteria` (the exit table) and `## Tripwires` (what stops the epic). When to make one, labels, tripwires and closing: [epic.md](epic.md).
 - **decision:** use the `question` skill.
 
 ## Size

@@ -40,12 +40,19 @@ QID=$(bd create --title "<the question, in plain words>" -t decision --silent \
 
 ## 4. Write the card (auq `ask_user_questions`)
 
-The visible text is for a human who has forgotten everything:
-- Use plain language in product terms. `context` recaps what happened and why it matters now.
+**Read before asking.** List what already bears on the question: ADRs, the glossary, objectives, earlier decision beads, the code. Read whatever you haven't. A question a document already answers wastes the operator's turn, and the answer comes back shaped by your gap.
+
+**Resolution check.** For each option, write the sentence you would act on if it were chosen. If any of those still leaves you unsure what to build, the question is too coarse: split it, or raise its level.
+
+**Falsifier.** In the bead's Recommendation, say what observation would prove the decision wrong. It carries over into the ADR.
+
+The visible text is for someone on a phone who has forgotten everything:
+- The first sentence of `context` says what changes for the operator. Then recap what happened, what you checked, and your prior: what you believe and why.
+- Plain text only: no file paths, line numbers, commit hashes, bead or issue ids, and no markdown.
 - Give a concrete example where it helps: a snippet, a scenario, a before/after.
-- Offer 2–4 options with the recommendation starred (`recommended: true`). Name the default. Each option's description says what changes if it is chosen over the default.
-- Add a "Go one level deeper" option with `expects_followup: true`.
-- **No AI references in visible text.** Bead ids, paths, rule ids and evidence go in `agent_notes`, which only select-type questions carry. `agent_notes` is hidden from the operator, so never put anything there they would need in order to decide.
+- Offer 2–4 options with the recommendation starred (`recommended: true`). Name the default. Each option says, in the operator's terms, what it costs and what it rules out.
+- Add a "Go one level deeper" option. If it is chosen, ask again one level up in the same thread (`parent_question_id`). Set `expects_followup: true` only on a question whose answer you will branch on at once, because it makes the call return before the rest are answered.
+- Bead ids, paths, rule ids and evidence go in `agent_notes`, which only select-type questions carry. `agent_notes` is hidden from the operator, so never put anything there they would need in order to decide.
 - `requester_name` is `<role>@<host>`. Send one card per sitting: batch everything you can ask now.
 
 ## 5. Day or night
@@ -67,5 +74,5 @@ The session-start line says which it is (`BEADWORK_TZ`, `BEADWORK_DAY`; default 
 ## 6. When the answer arrives
 
 1. `bd human respond $QID -r "<option id>: <label>"` closes the question and unblocks parked work.
-2. Record it where it belongs: architecture → `docs/adr/`, domain rule → `docs/domain/`, requirement → `docs/requirements/`.
+2. Record it where it belongs: architecture → an ADR (the `adr` skill), domain rule → `docs/domain/`, requirement → `docs/requirements/`.
 3. If it overturns a provisional default you built on, file a fix bead with `--deps discovered-from:$QID`.

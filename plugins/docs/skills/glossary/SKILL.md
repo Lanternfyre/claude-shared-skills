@@ -62,7 +62,7 @@ Write in business language. Star the recommendation. No file paths in the visibl
 
 - Update the entries and keep the index sorted. Rejected words go under **Not**.
 - Code that still uses a rejected word gets one bead per rename seam (`topic:glossary`). Never do a big-bang rename.
-- A term that comes from a requirement links its objective in **Serves**. Run `/domain:objectives` if the objective doesn't exist yet.
+- A term that comes from a requirement links its objective in **Serves**. Run `/docs:objectives` if the objective doesn't exist yet.
 
 ## 5. Check
 

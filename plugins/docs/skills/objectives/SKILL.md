@@ -53,4 +53,4 @@ Write in business language, with no file paths in the visible text.
 
 - Write the file. Only what the operator confirmed is `committed`.
 - When the project uses Beads, label each epic `objective:OBJ-n`. List the epics that serve no objective for the operator: either drop them, or there is a missing objective.
-- New terms go to `/domain:glossary`.
+- New terms go to `/docs:glossary`.

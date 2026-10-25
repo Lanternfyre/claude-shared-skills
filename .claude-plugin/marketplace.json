@@ -12,9 +12,9 @@
       "description": "Beads + auq work loop: write beads, raise questions, claim and ship slices, grill the operator, digest review chunks."
     },
     {
-      "name": "domain",
-      "source": "./plugins/domain",
-      "description": "Ubiquitous language and business objectives as Git docs the agents can rely on."
+      "name": "docs",
+      "source": "./plugins/docs",
+      "description": "The Git side of the knowledge map: ADRs, ubiquitous language and business objectives that agents can rely on."
     }
   ]
 }

@@ -7,7 +7,7 @@
 | Knowledge | Home |
 |---|---|
 | Business requirements and objectives | Git: `docs/requirements/` (`objectives.md`) |
-| Architectural decisions | Git: `docs/adr/` |
+| Architectural decisions | Git: `docs/adr/` (the `adr` skill; `tools/adr.py check` in CI) |
 | Technical constraints | Git: `docs/architecture/` |
 | Domain rules, invariants, glossary | Git: `docs/domain/` (`glossary.md`) |
 | Current task progress | Beads: status and `bd note` |

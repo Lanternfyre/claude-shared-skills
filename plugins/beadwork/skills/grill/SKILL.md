@@ -19,11 +19,13 @@ bd --readonly blocked --json        # which of them hold work back
 - A card stored in metadata (`auq_card`) was held overnight. Post it in this batch.
 - Read the night summaries. They feed the `context` of the first question; they are not questions.
 
+For each question, read what already bears on it: ADRs, the glossary, objectives and the code. The agent that filed it may have missed a document. A question a document already answers is closed with a pointer (`bd human respond <id> -r "answered by …"`), not asked.
+
 Order the questions: first those that block work, then the rest, grouped by `topic:`.
 
 ## 2. Write
 
-Follow the `question` skill's card rules (§4) for every question. A question answered on a provisional default needs three more things: what was assumed, what has been built on it since, and what changes if it is overturned.
+Follow the `question` skill's card rules (§4) for every question, including the resolution check. A question answered on a provisional default needs three more things: what was assumed, what has been built on it since, and what changes if it is overturned.
 
 Make one `ask_user_questions` call with `requester_name: "grill"`, then store each bead's ids:
 `bd update <id> --set-metadata auq_question_id=… --set-metadata auq_thread_id=…`
@@ -40,7 +42,7 @@ For each answer:
 - **"Other", or free text:** record it. If it doesn't settle the question, follow up in the same thread.
 - **A provisional default was overturned:** file a fix bead (the `bead` skill) with `--deps discovered-from:<id>`.
 - **Make it durable**, now or as a chore bead:
-  - architecture → `docs/adr/NNNN-<slug>.md` (context, decision, consequences);
+  - architecture → an ADR (the `adr` skill);
   - domain rule → `docs/domain/`;
   - term → `docs/domain/glossary.md`;
   - requirement or objective → `docs/requirements/`.
@@ -55,4 +57,4 @@ Run `bd memories`. For each memory:
 
 ## 6. Report
 
-Finish with one short list: answered, deferred, follow-up beads filed, and what is now ready (`bd ready`).
+Lead with a one-line verdict. Then give one short list: answered, deferred, follow-up beads filed, and what is now ready (`bd ready`). If the operator must still act on something, end with a `What I need from you` list; leave it out when there is nothing.

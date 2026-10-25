@@ -1,6 +1,6 @@
 ---
 name: bead
-description: Write, split or review a Beads work item (task, bug, chore, spike, epic) so an agent with none of your context can finish it. Use before any `bd create` of work, and when a bead is too big for one session.
+description: Write, split or review a Beads work item (task, bug, chore, spike, epic) so an agent with none of your context can finish it. Use before any `bd create` of work, when a bead is too big for one session, and when cutting a plan or epic into beads.
 ---
 
 # Writing a bead
@@ -40,6 +40,8 @@ Per type:
 ## Size
 
 One bead fits one session with at most one compaction. If it is bigger, split it at seams where each child can be verified on its own. Make the parent an epic (`--parent`) or chain the children with deps. Never split into "write the code" and "write the tests".
+
+To cut a whole plan, epic or milestone into beads, follow [cutting.md](cutting.md).
 
 ## Links and labels
 

@@ -43,6 +43,7 @@ Run `while sleep 120; do bd hb "$ID" || break; done` as a background command. St
 - Branch `bead/$ID-<slug>` off a fresh default branch, or use a worktree.
 - Read the project instructions, then `bd show $ID`, then every doc the bead links. Use the glossary's terms in code, tests and text.
 - For a spike bead (`-t spike`), follow [spike.md](spike.md) instead of steps 6–7.
+- For a bug bead (`-t bug`), follow [bug.md](bug.md) during step 6.
 
 ## 6. Work
 
@@ -55,7 +56,7 @@ Run `while sleep 120; do bd hb "$ID" || break; done` as a background command. St
 
 1. Run the project's verify command. Open no PR unless it is green.
 2. Check every Acceptance Criterion and note the evidence.
-3. **Promote** what future work needs into Git docs, in this PR: architecture → `docs/adr/` or `docs/architecture/`, domain rules → `docs/domain/`, terms → `docs/domain/glossary.md`. Notes that only mattered for this bead stay in the bead.
+3. **Promote** what future work needs into Git docs, in this PR: architecture decisions → an ADR (the `adr` skill), constraints → `docs/architecture/`, domain rules → `docs/domain/`, terms → `docs/domain/glossary.md`. Notes that only mattered for this bead stay in the bead.
 4. `gh pr create`. The body starts with `Bead: $ID`, then what and why in plain words, the criteria evidence, and any provisional defaults it relies on.
 5. `bd update $ID --status in_review`, then stop the heartbeat.
 6. **Never `bd close` a work bead.** It closes when its PR merges, via the project's steward or `/beadwork:review-chunk`.

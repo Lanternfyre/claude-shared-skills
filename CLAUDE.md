@@ -14,7 +14,7 @@ A Claude Code plugin marketplace of skills shared across our projects. Every mod
 
 - `claude plugin validate .` and `claude plugin validate plugins/<name>` pass.
 - `python3 plugins/docs/scripts/docs.py check` passes.
-- Bump `version` in the changed plugin's `plugin.json`.
+- Bump `version` in the changed plugin's `plugin.json`. The agent boxes auto-update only when a plugin's version changes, so a change without a bump never reaches them.
 - A change to `hooks/session-start.sh` is run by hand in a repo with `.beads/`, both with and without memories.
 
 ## Where knowledge goes

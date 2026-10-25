@@ -67,16 +67,27 @@ Run `while sleep 120; do bd hb <id> || break; done` as a background command. Sto
 ## 5. Branch and read
 
 - **Branch on your stack:** `gh stack add bead/<id>-<slug>` puts the new branch on top of your open stack. With no open stack (the operator merged it), start one from a fresh default branch: `gh stack init bead/<id>-<slug>`.
-- Read the project instructions, then your role card at `.claude/roles/<role>.md` (its purpose and never list bind you), then `bd show <id>`, then every doc the bead links. Use the glossary's terms in code, tests and text. With no role there is no card, and only the project's rules apply.
+- Read the project instructions, then your role card at `.claude/roles/<role>.md` (its purpose and never list bind you), then `bd show <id>`, whose notes are the bead's current state, then `bd comments <id> --json`. Comments added since your last update steer you: an operator's comment (its author is `operator`) binds you, like a Guardrail. This needs agents to write under their own name (the box's `BEADS_ACTOR`). In an operator's own session, the agent's comments are `operator` too, so skip the ones you wrote. Then read every doc the bead links. Use the glossary's terms in code, tests and text. With no role there is no card, and only the project's rules apply.
 - For a spike bead (`-t spike`), follow [spike.md](spike.md) instead of steps 6–7.
 - For a bug bead (`-t bug`), follow [bug.md](bug.md) during step 6.
 
 ## 6. Work
 
 - Stay inside the Guardrails. Anything outside them goes through the `question` skill (a decision) or becomes a surprise bead.
-- Findings go to the bead first: `bd note <id> "…"` at each milestone. Notes survive compaction and handoff.
+- **Progress record.** At each milestone (a test passing, a design choice made, a PR opened) and whenever you park:
+  1. Replace the current state: `bd update <id> --notes "<the current state>"`. Keep it short, in this shape:
+     ```text
+     Branch: bead/<id>-<slug> @ <short sha> (pushed)
+     Done: [x] <step>  [x] <step>
+     Next: <one concrete action>     Then: [ ] <step>  [ ] <step>
+     Blocked by: <question ids, a red check, a missing fact, or nothing>
+     Tried and failed: <dead ends, so nobody repeats them>
+     ```
+     The checklist in it is the bead's plan; there are no subtask beads.
+  2. Log the update as a comment: `bd comments add <id> "<what changed since the last update>"`. Comments carry their author and time, and they are the history.
+  Findings worth keeping beyond this bead still go into the docs at Finish (step 3).
 - `bd remember` is only for short-lived context the next sessions need, such as "staging DB down until Friday". Never use it for durable knowledge.
-- If you hit a usage limit or the session is ending, park the bead: push to `HEAD:bead/<id>-wip`, `bd note`, then `bd unclaim <id> --reason "…"`.
+- If you hit a usage limit or the session is ending, park the bead: push to `HEAD:bead/<id>-wip`, write the progress record (both steps) so the next session can continue from it, then `bd unclaim <id> --reason "…"`.
 
 ## 7. Finish
 

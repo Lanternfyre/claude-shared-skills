@@ -6,6 +6,7 @@
   - **must-ask:** park the bead and take the next.
 - **Loop** the slice until one of these happens: nothing is ready, you hit a usage limit, or a stop rule fires.
 - **Stack** as by day: every PR goes on top of the box's one stack ([stack.md](stack.md)), and the stack comes first each session.
+- **Park with a full progress record** (slice step 6): a fresh session starts from it with no other memory of the bead.
 - **On stop,** file one summary for the morning grill:
 
 ```bash

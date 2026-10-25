@@ -69,7 +69,7 @@ The visible text is for someone on a phone who has forgotten everything:
 
 The session-start line says which it is (`BEADWORK_TZ`, `BEADWORK_DAY`; default Europe/Warsaw, 08–23).
 
-- **Day:** post the card. If the project says a steward posts cards, store it instead with `bd update <qid> --set-metadata 'auq_card=<the card JSON on one line>'`. Record the ids: `bd update <qid> --set-metadata auq_question_id=<ids> --set-metadata auq_thread_id=<id>`. Wait up to 30 min. On `pending`, run `auq await <ids> --max-secs 1800` in the background. No answer means night handling.
+- **Day:** post the card. If the project says a steward posts cards, store it instead with `bd update <qid> --set-metadata 'auq_card=<the card JSON on one line>'`. Record the ids: `bd update <qid> --set-metadata auq_question_id=<ids> --set-metadata auq_thread_id=<id>`. Wait up to 30 min: if the call returns `pending`, run `${CLAUDE_PLUGIN_ROOT}/scripts/auq-wait.sh <ids> 1800` as a background command. It survives the server's rate limit, where a bare `auq await` gives up. No answer means night handling.
 - **Night, or unanswered:**
   - **default-ok:** proceed on the default, run `bd label add <qid> provisional`, and name it in the PR body.
   - **must-ask:** park the bead:
@@ -79,7 +79,7 @@ The session-start line says which it is (`BEADWORK_TZ`, `BEADWORK_DAY`; default 
     bd unclaim <id> --reason "waiting on <qid>"
     ```
     Then stop its heartbeat and take the next ready bead.
-- Never re-post a question that is still live; await its ids.
+- Never re-post a question that is still live; await its ids. If `ask_user_questions` itself returns an error after posting (a 429 from the server, for example), the questions are usually live already: the error names their ids, so wait on those.
 
 ## 6. When the answer arrives
 

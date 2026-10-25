@@ -1,8 +1,15 @@
 #!/usr/bin/env bash
 # Apply the beadwork conventions to the Beads workspace of the current repo.
-# Idempotent; run once per project after `bd init`. Most values land in .beads/config.yaml
-# (commit it); status.custom lands in the project database.
+# Idempotent: run it after `bd init`, and again whenever the session-start line says the
+# settings are out of date. The lint values land in .beads/config.yaml (commit it); the
+# version stamp lands in the project database.
 set -euo pipefail
+
+# Bump when a setting below changes, so the session-start hook can tell a repo that its
+# Beads settings no longer match the skills. 2: decision sections follow bd's built-ins;
+# no in_review status (beadwork 0.4).
+CONFIG_VERSION=2
+
 bd --readonly ping >/dev/null
 
 # Inside a git worktree, bd resolves .beads/ to the MAIN checkout and writes its
@@ -29,3 +36,5 @@ bd config set prime.max-memory-chars 2000
 
 # bd's anonymous usage metrics go to an external endpoint (user-level setting).
 bd metrics off
+
+bd config set beadwork.config-version "$CONFIG_VERSION"

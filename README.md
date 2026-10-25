@@ -78,7 +78,7 @@ bd init --server --external --server-user beads --prefix <prefix> --skip-agents 
 <a clone of this repo>/plugins/beadwork/scripts/configure-beads.sh
 ```
 
-`--skip-agents --skip-hooks` matters. Our hook and CLAUDE.md replace what `bd setup claude` would write.
+`--skip-agents --skip-hooks` matters. Our hook and CLAUDE.md replace what `bd setup claude` would write. Re-run `configure-beads.sh` (in the main checkout, never a worktree) whenever the session-start line says the repo's Beads settings predate the skills, then commit `.beads/config.yaml`.
 
 If a Beads web board serves the same Dolt server, add the new database to the board's project list: a lower-case database name and a readable display name. The board does not discover databases by itself, so a project left off the list exists but stays invisible there.
 

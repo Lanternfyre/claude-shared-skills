@@ -37,7 +37,7 @@ A Claude Code plugin marketplace with the skills our projects share, and the [do
 |---|---|---|
 | [`bead`](plugins/beadwork/skills/bead/SKILL.md): write or split a work item (Task / Guardrails / Acceptance Criteria); cut a plan into beads | agent | one description |
 | [`question`](plugins/beadwork/skills/question/SKILL.md): raise a decision or surprise; day/night handling; provisional defaults | agent | one description |
-| [`/beadwork:slice [night]`](plugins/beadwork/skills/slice/SKILL.md): close merged work → claim → lease → branch → verify → PR behind a merge gate; stacked PRs within a bead, bug flow, spikes, night runs | operator or scheduler | none |
+| [`/beadwork:slice [night]`](plugins/beadwork/skills/slice/SKILL.md): close merged work → claim → lease → branch → verify → PR behind a merge gate; one PR stack per box, bug flow, spikes, night runs | operator or scheduler | none |
 | [`/beadwork:grill`](plugins/beadwork/skills/grill/SKILL.md): one auq batch of every open question; record the answers; tidy memories | operator | none |
 | [`/beadwork:review-chunk`](plugins/beadwork/skills/review-chunk/SKILL.md): digest of PRs awaiting review; closes merged beads | operator | none |
 

@@ -5,6 +5,7 @@
   - **default-ok:** proceed provisionally.
   - **must-ask:** park the bead and take the next.
 - **Loop** the slice until one of these happens: nothing is ready, you hit a usage limit, or a stop rule fires.
+- **Stack** as by day: every PR goes on top of the box's one stack ([stack.md](stack.md)), and the stack comes first each session.
 - **On stop,** file one summary for the morning grill:
 
 ```bash

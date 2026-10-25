@@ -30,7 +30,14 @@ For each bead listed, `bd --readonly show <id> --json` shows its gates: the depe
 - **The check reported one of its gates as escalated** (its PR was closed without merging): `bd label remove <id> pr-open`, then `bd label add <id> pr-closed`. Leave the bead for the operator.
 - **Otherwise** it is still in review: leave it.
 
-Close only what GitHub confirms merged. Never close your own unmerged work.
+Close only what GitHub confirms merged. Never close your own unmerged work. If the check reports **errors**, `gh` can't reach GitHub: run `gh auth status`, report what it says, and stop. Errors never mean "nothing merged".
+
+**Your stack first.** Each box keeps one stack of PRs ([stack.md](stack.md)). `gh stack view` shows it. Before taking new work, look after it:
+- **Red CI** on one of its PRs: fix it in that PR's own branch, then `gh stack rebase` and `gh stack push`.
+- **Review feedback** (PR comments, or the operator asking): fix it in a new PR on top of the stack, gated to the same bead. Never rework a lower PR.
+- **Conflicts** with the main branch: `gh stack rebase`, then `gh stack push`.
+
+Details, limits and the denied-PR case are in [stack.md](stack.md).
 
 ## 2. Own questions first
 
@@ -47,7 +54,9 @@ bd ready --label role:<role> --exclude-type epic,decision --exclude-label human 
 ```
 The output is the claimed bead, or `[]`. Its `id` is `<id>` from here on.
 
-If nothing is ready for your role, never invent work. Report and stop:
+If nothing is ready, a bead blocked **only by beads whose PRs are in your own stack** may still be claimed and built on top of them. `bd --readonly blocked --json` lists each bead's `blocked_by`. Claim one with `bd update <id> --claim`. Work blocked by anyone else's beads waits.
+
+If nothing is claimable, never invent work. Report and stop:
 - `bd --readonly ready --exclude-type epic,decision --exclude-label human --json`: what is ready for other roles. `--explain` ignores filters, so don't use it here.
 - `bd --readonly blocked`: what is waiting on what.
 
@@ -57,7 +66,7 @@ Run `while sleep 120; do bd hb <id> || break; done` as a background command. Sto
 
 ## 5. Branch and read
 
-- Branch `bead/<id>-<slug>` off a fresh default branch, or use a worktree.
+- **Branch on your stack:** `gh stack add bead/<id>-<slug>` puts the new branch on top of your open stack. With no open stack (the operator merged it), start one from a fresh default branch: `gh stack init bead/<id>-<slug>`.
 - Read the project instructions, then your role card at `.claude/roles/<role>.md` (its purpose and never list bind you), then `bd show <id>`, then every doc the bead links. Use the glossary's terms in code, tests and text. With no role there is no card, and only the project's rules apply.
 - For a spike bead (`-t spike`), follow [spike.md](spike.md) instead of steps 6–7.
 - For a bug bead (`-t bug`), follow [bug.md](bug.md) during step 6.
@@ -76,7 +85,7 @@ Run `while sleep 120; do bd hb <id> || break; done` as a background command. Sto
 3. **Promote** what future work needs into Git docs, in this PR, with the `write` skill: architecture decisions → an ADR (the `adr` skill), constraints → `docs/architecture/`, domain rules → `docs/domain/`, terms → `docs/domain/glossary.md`. Notes that only mattered for this bead stay in the bead.
 4. **Docs impact.** Decide what the change does to the docs: contract, behaviour, data, security, operations, architecture, or internal only. If any docs page changed, finish it with the `write` skill (its check and reader walkthrough). A security or public-contract change with no matching docs is `unknown`, never `none`.
 5. **Role fence.** With a role, `${CLAUDE_PLUGIN_ROOT}/scripts/role-check.sh .claude/roles/<role>.md` must pass before any PR opens. It lists files outside the card's paths, judged by the card as the main branch has it. Move such a change out of the PR, or raise it through the `question` skill. Never edit the card to fit.
-6. `gh pr create`. If the bead needs more than one PR to stay under the size cap, stack them instead ([stack.md](stack.md)). Each PR body has, in this order:
+6. **Open the PR on the stack:** `gh stack submit --auto --open`, then `gh pr edit <PR URL> --body-file pr.md` for each new PR. A bead that needs more than one PR to stay under the size cap adds a branch per PR in the same way. Each PR body has, in this order:
    - `Bead: <id>`;
    - what and why, in plain words;
    - the criteria evidence;
@@ -89,6 +98,7 @@ Run `while sleep 120; do bd hb <id> || break; done` as a background command. Sto
    bd unclaim <id> --reason "in review: <PR URL>"
    ```
    Then stop the heartbeat. The gates keep the bead out of `bd ready` until every PR merges. Always use the full PR URL, so the check works from any repo.
+   **Gate only a real PR.** If submitting printed no PR URL for your branch (check `gh stack view`), create no gate and add no label. Run `gh auth status`, keep the bead claimed, and stop.
 8. **Never `bd close` unmerged work.** The bead closes after its PRs merge, at step 1 of whichever session runs next, or through the project's steward.
 9. Go back to step 1.
 

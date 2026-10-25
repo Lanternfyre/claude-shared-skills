@@ -92,6 +92,8 @@ If a Beads web board serves the same Dolt server, add the new database to the bo
 
 Then run `/docs:init` to bring existing docs onto the layout.
 
+**Roles** (optional): a box runs one role (`BEADWORK_ROLE`). Each role gets a card at `.claude/roles/<role>.md`, copied from [`templates/role.md`](templates/role.md): purpose, allowed paths, model, whether it may run at night, and a never list. The work loop reads the card and refuses a PR that touches files outside its paths.
+
 **Environment** (project `.claude/settings.json` `env`, or the box env):
 
 | Variable | Default | Meaning |

@@ -39,6 +39,9 @@ away=$(bd --readonly list -l operator:away --json 2>/dev/null | jlen)
 night=
 [ "$mode" = night ] && night=" · a night run needs ${BEADWORK_NIGHT_MIN_READY:-3} ready"
 echo "beadwork: $mode ($tz $(TZ=$tz date +%H:%M)) · ready $ready · open questions $asked · PRs in review $review${role:+ · role $role}$night"
+if [ -n "$role" ] && [ ! -f ".claude/roles/$role.md" ]; then
+  echo "beadwork: role $role has no card at .claude/roles/$role.md; work runs without its path fence or never list."
+fi
 script="$(cd "$(dirname "$0")/.." && pwd)/scripts/configure-beads.sh"
 want=$(sed -n 's/^CONFIG_VERSION=//p' "$script" 2>/dev/null)
 have=$(bd --readonly config get custom.beadwork-config-version 2>/dev/null | tail -1)

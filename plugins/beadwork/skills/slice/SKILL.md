@@ -58,7 +58,7 @@ Run `while sleep 120; do bd hb <id> || break; done` as a background command. Sto
 ## 5. Branch and read
 
 - Branch `bead/<id>-<slug>` off a fresh default branch, or use a worktree.
-- Read the project instructions, then `bd show <id>`, then every doc the bead links. Use the glossary's terms in code, tests and text.
+- Read the project instructions, then your role card at `.claude/roles/<role>.md` (its purpose and never list bind you), then `bd show <id>`, then every doc the bead links. Use the glossary's terms in code, tests and text. With no role there is no card, and only the project's rules apply.
 - For a spike bead (`-t spike`), follow [spike.md](spike.md) instead of steps 6–7.
 - For a bug bead (`-t bug`), follow [bug.md](bug.md) during step 6.
 
@@ -75,21 +75,22 @@ Run `while sleep 120; do bd hb <id> || break; done` as a background command. Sto
 2. Check every Acceptance Criterion and note the evidence.
 3. **Promote** what future work needs into Git docs, in this PR, with the `write` skill: architecture decisions → an ADR (the `adr` skill), constraints → `docs/architecture/`, domain rules → `docs/domain/`, terms → `docs/domain/glossary.md`. Notes that only mattered for this bead stay in the bead.
 4. **Docs impact.** Decide what the change does to the docs: contract, behaviour, data, security, operations, architecture, or internal only. If any docs page changed, finish it with the `write` skill (its check and reader walkthrough). A security or public-contract change with no matching docs is `unknown`, never `none`.
-5. `gh pr create`. If the bead needs more than one PR to stay under the size cap, stack them instead ([stack.md](stack.md)). Each PR body has, in this order:
+5. **Role fence.** With a role, `${CLAUDE_PLUGIN_ROOT}/scripts/role-check.sh .claude/roles/<role>.md` must pass before any PR opens. It lists files outside the card's paths, judged by the card as the main branch has it. Move such a change out of the PR, or raise it through the `question` skill. Never edit the card to fit.
+6. `gh pr create`. If the bead needs more than one PR to stay under the size cap, stack them instead ([stack.md](stack.md)). Each PR body has, in this order:
    - `Bead: <id>`;
    - what and why, in plain words;
    - the criteria evidence;
    - any provisional defaults it relies on;
    - the `Docs impact:` line, plus `Structure:` and `Readers:` if docs changed.
-6. **Hand it to review.** Give each PR a merge gate, then release the bead:
+7. **Hand it to review.** Give each PR a merge gate, then release the bead:
    ```bash
    bd gate create --type=gh:pr --blocks <id> --await-id <PR URL> --reason "PR #<n>"   # one per PR
    bd label add <id> pr-open
    bd unclaim <id> --reason "in review: <PR URL>"
    ```
    Then stop the heartbeat. The gates keep the bead out of `bd ready` until every PR merges. Always use the full PR URL, so the check works from any repo.
-7. **Never `bd close` unmerged work.** The bead closes after its PRs merge, at step 1 of whichever session runs next, or through the project's steward.
-8. Go back to step 1.
+8. **Never `bd close` unmerged work.** The bead closes after its PRs merge, at step 1 of whichever session runs next, or through the project's steward.
+9. Go back to step 1.
 
 ## Stop rules
 

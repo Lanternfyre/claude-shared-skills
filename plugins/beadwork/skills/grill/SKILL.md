@@ -32,7 +32,7 @@ Make one `ask_user_questions` call with `requester_name: "grill"`, then store ea
 
 ## 3. Wait
 
-Blocking is normal. If the call returns `pending`, run `auq await <ids>` in the background and end the turn; the answers resume the work.
+Blocking is normal. If the call returns `pending`, or an error after posting (the error names the ids), run `${CLAUDE_PLUGIN_ROOT}/scripts/auq-wait.sh <ids> 14400` as a background command and end the turn; the answers resume the work. Never re-post to get past an error.
 
 ## 4. Record
 

@@ -80,6 +80,8 @@ bd init --server --external --server-user beads --prefix <prefix> --skip-agents 
 
 `--skip-agents --skip-hooks` matters. Our hook and CLAUDE.md replace what `bd setup claude` would write.
 
+If a Beads web board serves the same Dolt server, add the new database to the board's project list: a lower-case database name and a readable display name. The board does not discover databases by itself, so a project left off the list exists but stays invisible there.
+
 **Personal instructions** (once per machine): copy [`templates/personal-CLAUDE.md`](templates/personal-CLAUDE.md) to `~/.claude/CLAUDE.md`. It holds the candour and report rules for every project.
 
 **Instructions:** copy [`templates/CLAUDE.md`](templates/CLAUDE.md) into the project and fill its slots. It holds:

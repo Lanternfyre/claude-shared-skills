@@ -5,6 +5,14 @@
 set -euo pipefail
 bd --readonly ping >/dev/null
 
+# Inside a git worktree, bd resolves .beads/ to the MAIN checkout and writes its
+# config.yaml there, silently editing whatever branch that checkout is on.
+if [ "$(bd --readonly context --json | jq -r '.is_worktree')" = true ]; then
+  echo "configure-beads: refusing to run in a git worktree; bd would write the main checkout's .beads/config.yaml." >&2
+  echo "Run it in the main checkout, or edit .beads/config.yaml in this worktree by hand." >&2
+  exit 1
+fi
+
 # Sections the `bead` and `question` skills write. bd's built-ins add Acceptance Criteria
 # (task, bug), Steps to Reproduce (bug), Success Criteria (epic), and Decision, Rationale
 # and Alternatives Considered (decision) on top.

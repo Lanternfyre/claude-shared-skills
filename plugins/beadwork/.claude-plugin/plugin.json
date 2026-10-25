@@ -1,6 +1,6 @@
 {
   "name": "beadwork",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "Beads + auq work loop: write beads, raise questions, claim and ship slices, grill the operator, digest review chunks.",
   "author": {
     "name": "Adrian Jutrowski"

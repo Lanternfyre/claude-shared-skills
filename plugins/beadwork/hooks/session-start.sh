@@ -41,7 +41,7 @@ night=
 echo "beadwork: $mode ($tz $(TZ=$tz date +%H:%M)) · ready $ready · open questions $asked · PRs in review $review${role:+ · role $role}$night"
 script="$(cd "$(dirname "$0")/.." && pwd)/scripts/configure-beads.sh"
 want=$(sed -n 's/^CONFIG_VERSION=//p' "$script" 2>/dev/null)
-have=$(bd --readonly config get beadwork.config-version 2>/dev/null | tail -1)
+have=$(bd --readonly config get custom.beadwork-config-version 2>/dev/null | tail -1)
 if [ -n "$want" ] && [ "$have" != "$want" ]; then
   echo "beadwork: this repo's Beads settings predate the skills (want version $want). Run $script in the main checkout, then commit .beads/config.yaml."
 fi

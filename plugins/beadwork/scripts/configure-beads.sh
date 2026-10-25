@@ -37,4 +37,4 @@ bd config set prime.max-memory-chars 2000
 # bd's anonymous usage metrics go to an external endpoint (user-level setting).
 bd metrics off
 
-bd config set beadwork.config-version "$CONFIG_VERSION"
+bd config set custom.beadwork-config-version "$CONFIG_VERSION"

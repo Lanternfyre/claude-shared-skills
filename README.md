@@ -11,6 +11,8 @@ A Claude Code plugin marketplace with the skills our projects share, and the [do
 
 | Term | Meaning |
 |---|---|
+| Agent box | A homelab pod running one Claude Code session for one role, reachable by Remote Control |
+| Work loop | `/beadwork:slice`: close merged work, claim a bead, build it, open its PR behind a merge gate |
 | Operator | The human who decides; in most projects, the one person working with the agents |
 | Beads (`bd`) | The issue tracker for live work: beads are work items with dependencies, stored in a Dolt database ([steveyegge/beads](https://github.com/steveyegge/beads)) |
 | Decision bead | A bead holding a question for the operator: options, recommendation, default, and the answer once given |
@@ -92,7 +94,7 @@ If a Beads web board serves the same Dolt server, add the new database to the bo
 
 Then run `/docs:init` to bring existing docs onto the layout.
 
-**Roles** (optional): a box runs one role (`BEADWORK_ROLE`). Each role gets a card at `.claude/roles/<role>.md`, copied from [`templates/role.md`](templates/role.md): purpose, allowed paths, model, whether it may run at night, and a never list. The work loop reads the card and refuses a PR that touches files outside its paths.
+**Roles** (optional): an agent box runs one role, set as `BEADWORK_ROLE` in that box's own homelab values (`extraEnv`). Set per project instead, every box would get the same role. A box with a role claims only beads labelled `role:<role>`; a box without one claims any bead. Each role has a card at `.claude/roles/<role>.md`, copied from [`templates/role.md`](templates/role.md): purpose, allowed paths, model, whether it may run at night, and a never list. The [work loop](plugins/beadwork/skills/slice/SKILL.md) reads the card at the start of every bead. Before opening a PR it runs [`role-check.sh`](plugins/beadwork/scripts/role-check.sh), which lists files outside the card's paths, and opens no PR until the list is empty. This is a check the agent runs, not CI: nothing yet catches a PR opened by other means.
 
 **Environment** (project `.claude/settings.json` `env`, or the box env):
 

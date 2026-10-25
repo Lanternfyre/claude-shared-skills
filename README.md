@@ -63,19 +63,19 @@ Copy it into a project's `tools/` to run it in pre-commit or CI.
 
 ## Use it in a project
 
-Clone this repo first, then:
-
 ```bash
-claude plugin marketplace add <your clone of this repo>                # once per machine
+claude plugin marketplace add Lanternfyre/claude-shared-skills       # once per machine; clones over SSH
 claude plugin install beadwork@claude-shared-skills --scope project    # writes .claude/settings.json
 claude plugin install docs@claude-shared-skills --scope project
 ```
+
+A machine needs SSH access to the Lanternfyre GitHub org to add the marketplace. To try edits to the skills before pushing, add a local clone instead (`claude plugin marketplace add <path>`); Claude Code then reads the plugins straight from that folder.
 
 **Beads** (only for `beadwork`): each repo gets its own database on the shared Beads server, which runs Dolt in server mode. The connection comes from environment variables: `BEADS_DOLT_SERVER_MODE=1`, `BEADS_DOLT_SERVER_HOST`, `BEADS_DOLT_SERVER_PORT`, `BEADS_DOLT_SERVER_USER` and `BEADS_DOLT_SERVER_TLS`. The password comes from `~/.config/beads/credentials`. `<prefix>` is the short name in front of each bead id, for example `skills` gives `skills-1qd`.
 
 ```bash
 bd init --server --external --server-user beads --prefix <prefix> --skip-agents --skip-hooks --non-interactive --role maintainer
-<your clone>/plugins/beadwork/scripts/configure-beads.sh
+<a clone of this repo>/plugins/beadwork/scripts/configure-beads.sh
 ```
 
 `--skip-agents --skip-hooks` matters. Our hook and CLAUDE.md replace what `bd setup claude` would write.

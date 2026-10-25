@@ -103,8 +103,15 @@ Then run `/docs:init` to bring existing docs onto the layout.
 | `BEADWORK_ROLE` | unset (any) | `role:<x>` label to claim, and `asked-by:<x>` on questions |
 | `BEADWORK_TZ` | `Europe/Warsaw` | clock for day/night |
 | `BEADWORK_DAY` | `08-23` | day window, in hours |
-| `BEADWORK_NIGHT_MIN_READY` | `3` | a night run needs at least this many ready beads to start |
+| `BEADWORK_NIGHT_CUTOFF` | `06:00` | the night loop starts no new bead from this time until the day ends |
+| `BEADWORK_BEAD_TIMEBOX` | `2h` | how long one night session may run before the loop parks its bead |
 | `BEADWORK_NO_MEMORIES` | `0` | `1` keeps `bd` memories out of session start |
+
+**Night runs** also read two settings from the project's Beads config:
+- `custom.beadwork-verify`: the project's verify command. There are no nights without one.
+- `custom.beadwork-review-cap`: how many PRs may wait for review before the loop stops starting beads (default 12).
+
+A bead runs at night only with the `night-ok` label, which you add, and only for a role whose card says `night: yes`. The loop is [`scripts/night-run.sh`](plugins/beadwork/scripts/night-run.sh); `--dry-run` shows what it would do now and why.
 
 ## Deliberately not here
 

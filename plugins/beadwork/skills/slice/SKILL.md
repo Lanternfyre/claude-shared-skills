@@ -16,7 +16,7 @@ disable-model-invocation: true
 
 ```bash
 bd --readonly ping
-bd --readonly list -l operator:away --json          # away switch: anything but [] means stop
+bd --readonly list -l operator:away --json          # away switch: not [] means hold questions as at night; work goes on
 ```
 
 **Close merged work.** A bead under review waits behind one merge gate per pull request. When those gates resolve, the bead becomes ready again, so it must be closed before anyone claims it:

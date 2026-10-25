@@ -45,7 +45,7 @@ For each answer:
   - architecture → an ADR (the `adr` skill);
   - domain rule → `docs/domain/`;
   - term → `docs/domain/glossary.md`;
-  - requirement or objective → `docs/requirements/`.
+  - feature requirement → `docs/capabilities/`, quality requirement → `docs/requirements/`, objective → `docs/product/objectives.md` (the `write` skill).
 - **Night summaries the operator has read:** `bd close <id> --reason "read in grill"`.
 
 ## 5. Memory hygiene

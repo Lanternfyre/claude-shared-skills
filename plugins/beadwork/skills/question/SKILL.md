@@ -74,5 +74,5 @@ The session-start line says which it is (`BEADWORK_TZ`, `BEADWORK_DAY`; default 
 ## 6. When the answer arrives
 
 1. `bd human respond $QID -r "<option id>: <label>"` closes the question and unblocks parked work.
-2. Record it where it belongs: architecture → an ADR (the `adr` skill), domain rule → `docs/domain/`, requirement → `docs/requirements/`.
+2. Record it where it belongs: architecture → an ADR (the `adr` skill), domain rule → `docs/domain/`, requirement → its page in `docs/capabilities/` or `docs/requirements/` (the `write` skill).
 3. If it overturns a provisional default you built on, file a fix bead with `--deps discovered-from:$QID`.

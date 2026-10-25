@@ -32,7 +32,7 @@ The file starts with the list of bounded contexts and a sorted term index. When 
 ## 1. Harvest
 
 **Sources:**
-- `docs/requirements/`, `docs/domain/` and the README;
+- `docs/product/`, `docs/capabilities/`, `docs/domain/` and the README;
 - bead titles (`bd list --all --json`);
 - code identifiers: types, tables, routes, enums, events;
 - UI strings and test names.

@@ -29,6 +29,7 @@ Keep the PRs whose body has a `Bead:` line and that are not drafts.
 - **Evidence:** CI status, acceptance criteria → tests, the demo link.
 - **Provisional defaults** it relies on: decision beads labelled `provisional`.
 - **Size:** hand-written lines, kept apart from tests, fixtures and generated files. Add the review class if the project uses one.
+- **Docs:** the PR's `Docs impact`, `Structure` and `Readers` lines as written. Flag `unknown` impact and failed reader tasks. Flag critical pages (architecture, security, destructive runbooks, business claims, external-facing) as needing your own read.
 
 ## 4. Order
 

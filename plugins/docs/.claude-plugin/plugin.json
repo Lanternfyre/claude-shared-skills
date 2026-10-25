@@ -1,7 +1,7 @@
 {
   "name": "docs",
-  "version": "0.2.0",
-  "description": "The Git side of the knowledge map: ADRs, ubiquitous language and business objectives that agents can rely on.",
+  "version": "0.3.0",
+  "description": "The documentation standard: people-first pages, ADRs, glossary and objectives, with structure checks and reader walkthroughs.",
   "author": {
     "name": "Adrian Jutrowski"
   }

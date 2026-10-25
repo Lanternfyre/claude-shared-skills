@@ -1,6 +1,6 @@
 ---
 name: objectives
-description: Capture business objectives in docs/requirements/objectives.md as measurable outcomes written in glossary terms and agreed with the operator, so every requirement, epic and bead can say which objective it serves.
+description: Capture business objectives in docs/product/objectives.md as measurable outcomes written in glossary terms and agreed with the operator, so every requirement, epic and bead can say which objective it serves.
 argument-hint: "[source docs or notes]"
 disable-model-invocation: true
 ---
@@ -9,10 +9,11 @@ disable-model-invocation: true
 
 An objective is an outcome for someone, with a measure. It is not a feature. Agents use objectives to judge trade-offs ("which option serves OBJ-2 better?") and to turn down scope that serves none of them.
 
-## Format (`docs/requirements/objectives.md`)
+## Format (`docs/product/objectives.md`)
 
 ```markdown
-## OBJ-2 No session outlives logout
+## No session outlives logout (OBJ-2)
+<a id="OBJ-2"></a>
 - **Outcome:** a player who logs out cannot act again from any device until they log in.
 - **Measure:** 0 actions accepted after logout in the session-replay suite.
 - **Why:** 14 account-theft reports in Q3 came from stale sessions.
@@ -21,13 +22,13 @@ An objective is an outcome for someone, with a measure. It is not a feature. Age
 - **Status:** proposed | committed | met | dropped
 ```
 
-Ids are stable and never reused. Write in the glossary's terms; a term it lacks becomes a glossary candidate.
+The heading is the outcome in words; the id follows it and is defined by the anchor. Ids are stable and never reused. Write in the glossary's terms; a term it lacks becomes a glossary candidate.
 
 ## 1. Gather
 
 Sources:
 - the files or notes in `$ARGUMENTS`;
-- `docs/requirements/`, the README and any plans;
+- `docs/product/`, `docs/capabilities/`, the README and any plans;
 - epics: `bd list -t epic --all --json`.
 
 Collect the stated goals and the implied ones (why does this epic exist?). Separate constraints (they go to `docs/architecture/`) and domain rules (`docs/domain/`).

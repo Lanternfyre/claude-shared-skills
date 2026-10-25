@@ -56,14 +56,20 @@ Run `while sleep 120; do bd hb "$ID" || break; done` as a background command. St
 
 1. Run the project's verify command. Open no PR unless it is green.
 2. Check every Acceptance Criterion and note the evidence.
-3. **Promote** what future work needs into Git docs, in this PR: architecture decisions → an ADR (the `adr` skill), constraints → `docs/architecture/`, domain rules → `docs/domain/`, terms → `docs/domain/glossary.md`. Notes that only mattered for this bead stay in the bead.
-4. `gh pr create`. The body starts with `Bead: $ID`, then what and why in plain words, the criteria evidence, and any provisional defaults it relies on.
-5. `bd update $ID --status in_review`, then stop the heartbeat.
-6. **Never `bd close` a work bead.** It closes when its PR merges, via the project's steward or `/beadwork:review-chunk`.
-7. Go back to step 2.
+3. **Promote** what future work needs into Git docs, in this PR, with the `write` skill: architecture decisions → an ADR (the `adr` skill), constraints → `docs/architecture/`, domain rules → `docs/domain/`, terms → `docs/domain/glossary.md`. Notes that only mattered for this bead stay in the bead.
+4. **Docs impact.** Decide what the change does to the docs: contract, behaviour, data, security, operations, architecture, or internal only. If any docs page changed, finish it with the `write` skill (its check and reader walkthrough). A security or public-contract change with no matching docs is `unknown`, never `none`.
+5. `gh pr create`. The body has, in this order:
+   - `Bead: $ID`;
+   - what and why, in plain words;
+   - the criteria evidence;
+   - any provisional defaults it relies on;
+   - the `Docs impact:` line, plus `Structure:` and `Readers:` if docs changed.
+6. `bd update $ID --status in_review`, then stop the heartbeat.
+7. **Never `bd close` a work bead.** It closes when its PR merges, via the project's steward or `/beadwork:review-chunk`.
+8. Go back to step 2.
 
 ## Stop rules
 
 - On a tripwire in the bead, or two red verify or CI runs you cannot explain:
   `bd update $ID --status blocked --append-notes "tripwire: …"`. File a surprise bead, stop the heartbeat, and stop.
-- One bead at a time. No sub-agent fan-out unless the project allows it.
+- One bead at a time. No sub-agent fan-out unless the project allows it. The docs reader walkthrough (one fresh agent per docs change) is the standing exception.

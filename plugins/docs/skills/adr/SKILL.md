@@ -1,19 +1,21 @@
 ---
 name: adr
-description: Write, supersede, review or audit an architecture decision record in docs/adr/. Use whenever an architectural decision is settled or reversed, and to check whether one is worth recording at all.
+description: Write, supersede, review or audit an architecture decision record in docs/decisions/. Use whenever an architectural decision is settled or reversed, and to check whether one is worth recording at all.
 argument-hint: "[new <title> | supersede <id> | review <id> | audit]"
-allowed-tools: Bash(python3 ${CLAUDE_SKILL_DIR}/adr.py *)
+allowed-tools: Bash(python3 ${CLAUDE_PLUGIN_ROOT}/scripts/docs.py *)
 ---
 
 # Architecture decision records
 
-`adr.py` mints ids, rebuilds `docs/adr/INDEX.md` and checks the corpus. For pre-commit and CI, copy it into the repo (for example `tools/adr.py`) and run `adr.py check`.
+`docs.py` mints ids, rebuilds the decision index (`docs/decisions/README.md`) and checks the docs. For pre-commit and CI, copy it into the repo (for example `tools/docs.py`) and run `docs.py check`.
 
 ```bash
-python3 ${CLAUDE_SKILL_DIR}/adr.py new "<title>"   # ADR-YYYYMMDD-HHMMSS-xxxx-<slug>.md, status Proposed
-python3 ${CLAUDE_SKILL_DIR}/adr.py index
-python3 ${CLAUDE_SKILL_DIR}/adr.py check
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/docs.py adr "<title>"   # ADR-YYYYMMDD-HHMMSS-xxxx-<slug>.md, status Proposed
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/docs.py index
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/docs.py check
 ```
+
+The page's heading is the decision's title; the id lives in the header block and the index. A design proposal is an ADR with status Proposed: there are no separate RFC or change-request documents.
 
 ## Is it an ADR?
 
@@ -31,7 +33,7 @@ Where the rest goes:
 
 ## Header and sections
 
-`adr.py new` writes the header. Keep it accurate: `status` is Proposed, Accepted, Superseded or Deprecated. Record `supersedes`/`superseded_by` and `amends`/`amended_by` on both ADRs. `refs` lists the ADRs this one depends on.
+`docs.py adr` writes the header. Keep it accurate: `status` is Proposed, Accepted, Superseded or Deprecated. Record `supersedes`/`superseded_by` and `amends`/`amended_by` on both ADRs. `refs` lists the ADRs this one depends on.
 
 - **Context:** the forces at play and the constraints. It may quote the operator's own words.
 - **Decision:** what is decided, with concrete values, in "we will" form. Each point is one of:
@@ -50,7 +52,7 @@ Keep an ADR short: one decision per ADR, and no tutorials on the technology.
 
 1. Apply the three-part test. Read the ADRs, glossary and objectives the decision touches.
 2. If the operator hasn't decided yet, ask through the `question` skill first: a level 3 `tradeoff` card. Never write your own guess as the Decision.
-3. Run `adr.py new`, fill in the sections, then `adr.py index` and `adr.py check`. Commit the ADR together with `INDEX.md`.
+3. Run `docs.py adr`, fill in the sections, then `docs.py index` and `docs.py check`. Commit the ADR together with the regenerated index.
 4. Status is `Accepted` only after the operator approves.
 
 ## supersede
@@ -59,7 +61,7 @@ Keep an ADR short: one decision per ADR, and no tutorials on the technology.
 
 1. Write the new ADR, with `supersedes: [<old>]`.
 2. In the old ADR, set `status: Superseded` and `superseded_by: <new>`. Leave its text alone.
-3. Run `adr.py index` and `adr.py check`.
+3. Run `docs.py index` and `docs.py check`.
 
 An `amends` ADR may only add or clarify. Anything that changes the outcome is a supersede. Fixing typos and wording in place is fine.
 
@@ -75,7 +77,7 @@ Does `<id>` still describe reality?
 Read the whole corpus and report findings by severity:
 - **ambiguity:** hedged decisions, and "Accepted" ADRs whose text says pending;
 - **contradiction:** two ADRs deciding the same thing differently;
-- **status integrity:** what `adr.py check` reports, plus reversals hidden in update sections;
+- **status integrity:** what `docs.py check` reports, plus reversals hidden in update sections;
 - **reachability:** ADRs nothing links to.
 
 Each finding becomes a bead, or a `supersede`.

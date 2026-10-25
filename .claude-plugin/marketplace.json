@@ -14,7 +14,7 @@
     {
       "name": "docs",
       "source": "./plugins/docs",
-      "description": "The Git side of the knowledge map: ADRs, ubiquitous language and business objectives that agents can rely on."
+      "description": "The documentation standard: people-first pages, ADRs, glossary and objectives, with structure checks and reader walkthroughs."
     }
   ]
 }

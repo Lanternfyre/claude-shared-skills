@@ -20,7 +20,7 @@ A Claude Code plugin marketplace of skills shared across our projects. Every mod
 
 | Knowledge | Home |
 |---|---|
-| Why a skill is shaped the way it is | Git: `docs/adr/` |
+| Why a skill is shaped the way it is | Git: `docs/decisions/` (the `adr` skill) |
 | Work in progress, blockers, findings | Beads (prefix `skills`) |
 | Short-lived agent context | `bd remember` |
 | Agent instructions | This file |

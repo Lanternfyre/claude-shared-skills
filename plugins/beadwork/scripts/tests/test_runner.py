@@ -788,11 +788,11 @@ class Worker(TempRepo):
         self.worker('codex', '--recover')
         self.assertFalse(self.state()['recovery_required'])
 
-    def test_model_settings_are_optional_and_no_unsafe_flags_are_passed(self):
+    def test_model_settings_preserve_host_permission_defaults(self):
         self.worker('codex', '--model', 'test-codex', '--effort', 'high')
         args = self.data()['models'][0]['args']
         self.assertIn('model_reasoning_effort="high"', args)
-        self.assertIn('workspace-write', args)
+        self.assertNotIn('--sandbox', args)
         for value in args:
             self.assertNotIn('dangerously', value)
             self.assertNotIn('approval_policy', value)

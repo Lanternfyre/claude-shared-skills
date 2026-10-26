@@ -67,7 +67,7 @@ Run `while sleep 120; do bd hb <id> || break; done` as a background command. Sto
 
 ## 6. Plan, then work
 
-- **Plan before building.** Explore the code and docs the bead touches. Then write the plan into the current state (the progress record below): the approach, the alternatives you rejected and why, and the risks. The operator sees it and can steer by comment, but does not approve it, so start building once it is written. A plan already in the notes from an earlier session stands, unless new comments or findings change it.
+- **Plan before building.** Explore the code and docs the bead touches; read-only sub-agents can help (Stop rules). Then write the plan into the current state (the progress record below): the approach, the alternatives you rejected and why, and the risks. The operator sees it and can steer by comment, but does not approve it, so start building once it is written. A plan already in the notes from an earlier session stands, unless new comments or findings change it.
 - **Re-planning mid-bead is normal.** Update the plan in the notes and log why in a comment. If the new plan no longer fits the bead, re-cut it (the `bead` skill).
 - Stay inside the Guardrails. Anything outside them goes through the `question` skill (a decision) or becomes a surprise bead.
 - **Progress record.** At each milestone (a test passing, a design choice made, a PR opened) and whenever you park:
@@ -116,4 +116,5 @@ Run `while sleep 120; do bd hb <id> || break; done` as a background command. Sto
 
 - On a tripwire in the bead, or two red verify or CI runs you cannot explain:
   `bd update <id> --status blocked --append-notes "tripwire: …"`. File a surprise bead, stop the heartbeat, and stop.
-- One bead at a time. No sub-agent fan-out unless the project allows it. The docs reader walkthrough (one fresh agent per docs change) is the standing exception.
+- One bead at a time.
+- **Sub-agents: read-only, up to three per bead**, attended and at night, unless the project says otherwise. Use them to explore code and docs, for research, and for an independent review. Spawn them with the Agent tool as the `Explore` type, and tell them never to change files, branches or Beads. The docs reader walkthrough counts as one. No sub-agent writes code: one session owns the bead's changes.

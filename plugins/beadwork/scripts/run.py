@@ -470,7 +470,9 @@ class Runner:
             if self.args.effort:
                 args += ['--effort', self.args.effort]
         else:
-            args = ['codex', 'exec', '--sandbox', 'workspace-write']
+            # Permission defaults belong to the Codex host. An explicit runner
+            # override would silently defeat a box or project policy.
+            args = ['codex', 'exec']
             if self.args.model:
                 args += ['--model', self.args.model]
             if self.args.effort:

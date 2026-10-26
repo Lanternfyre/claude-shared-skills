@@ -34,7 +34,7 @@ python3 "<plugin-root>/scripts/run.py" --engine codex --bead <id> --max-beads 1
 
 `--model` and `--effort` are optional and otherwise use that host's defaults. Never translate model names or effort levels between engines. `--delivery auto` lets the agent choose PR, stack or local delivery within project conventions; an explicit mode overrides the default for new work. The review cap counts both PR and local handoffs. `--max-beads 0` means no bead-count limit within the fixed time budget; use `1` for a single-bead trial.
 
-Both engines preserve their normal approvals and trust. Codex uses workspace-write sandboxing. Configure Beads, GitHub, the question inbox and plugin installation in the box before running work that needs them. A headless worker cannot answer a missing interactive login or approval for you. The runner does not grant credentials or bypass host policy.
+Both engines preserve their host approvals and trust. Codex uses the sandbox and approval defaults configured by its host or project; the runner does not override them. Configure Beads, GitHub, the question inbox and plugin installation in the box before running work that needs them. A headless worker cannot answer a missing interactive login or approval for you. The runner does not grant credentials or bypass host policy.
 
 ## Conversations and recovery
 

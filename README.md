@@ -123,7 +123,7 @@ The loop is [`scripts/night-run.sh`](plugins/beadwork/scripts/night-run.sh), run
 6. a session hit the usage limit;
 7. two sessions in a row failed or ran past the two-hour time box.
 
-It also stops when Beads is unreachable. When it stops, it files a **morning-summary** bead: why it stopped, plus one line per session. A morning card bundling these with the night's held questions is still to come (bead `skills-wp1.5`). Away mode does not stop nights: it only holds questions, as at night.
+It also stops when Beads is unreachable. When it stops, it files a **morning-summary** bead: why it stopped, plus one line per session. The morning card, `/beadwork:grill morning`, posts these with the night's held questions as one card when the day starts. A homelab job will run it at 08:00 (bead `skills-wp1.6`); until then, run it by hand. Away mode does not stop nights: it only holds questions, as at night.
 
 ## Deliberately not here
 

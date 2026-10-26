@@ -6,6 +6,8 @@
   docs.py index             rewrite docs/decisions/README.md from the ADR headers
   docs.py check             structural health; exit 1 on any problem
 
+Every command but `id` exits 2 when --root is not a directory.
+
 `check` covers ADR headers and links, relative Markdown links and their anchors, and ids
 (REQ, NFR, OBJ): each defined once with <a id="..."></a>, every mention resolving. Pages are
 every Markdown file Git tracks, plus README.md and docs/ on disk, outside dot-folders. It proves
@@ -347,13 +349,17 @@ def main(argv=None):
     sub.add_parser("check", parents=[common], help="structural health")
     args = parser.parse_args(argv)
 
+    if args.cmd == "id":
+        print(f"{args.kind}-{stamp()}")
+        return 0
     root = args.root.resolve()
+    if not root.is_dir():
+        # A typo'd root would otherwise pass the check with nothing read, or grow a stray tree.
+        print(f"docs: {args.root} is not a directory", file=sys.stderr)
+        return 2
     adr_dir = root / "docs" / "decisions"
     if args.cmd == "adr":
         print(new_adr(adr_dir, args.title).relative_to(root))
-        return 0
-    if args.cmd == "id":
-        print(f"{args.kind}-{stamp()}")
         return 0
 
     adrs, errors = load_adrs(adr_dir)

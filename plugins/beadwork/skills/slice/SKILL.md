@@ -65,19 +65,24 @@ Run `while sleep 120; do bd hb <id> || break; done` as a background command. Sto
 - For a spike bead (`-t spike`), follow [spike.md](spike.md) instead of steps 6–7.
 - For a bug bead (`-t bug`), follow [bug.md](bug.md) during step 6.
 
-## 6. Work
+## 6. Plan, then work
 
+- **Plan before building.** Explore the code and docs the bead touches. Then write the plan into the current state (the progress record below): the approach, the alternatives you rejected and why, and the risks. The operator sees it and can steer by comment, but does not approve it, so start building once it is written. A plan already in the notes from an earlier session stands, unless new comments or findings change it.
+- **Re-planning mid-bead is normal.** Update the plan in the notes and log why in a comment. If the new plan no longer fits the bead, re-cut it (the `bead` skill).
 - Stay inside the Guardrails. Anything outside them goes through the `question` skill (a decision) or becomes a surprise bead.
 - **Progress record.** At each milestone (a test passing, a design choice made, a PR opened) and whenever you park:
   1. Replace the current state: `bd update <id> --notes "<the current state>"`. Keep it short, in this shape:
      ```text
      Branch: bead/<id>-<slug> @ <short sha> (pushed)
+     Plan: <the approach, in a sentence or two>
+       Rejected: <alternative>: <why>
+       Risks: <what could go wrong, and how you would notice>
      Done: [x] <step>  [x] <step>
      Next: <one concrete action>     Then: [ ] <step>  [ ] <step>
      Blocked by: <question ids, a red check, a missing fact, or nothing>
      Tried and failed: <dead ends, so nobody repeats them>
      ```
-     The checklist in it is the bead's plan; there are no subtask beads.
+     The checklist carries the plan's steps; there are no subtask beads.
   2. Log the update as a comment: `bd comments add <id> "<what changed since the last update>"`. Comments carry their author and time, and they are the history.
   Findings worth keeping beyond this bead still go into the docs at Finish (step 3).
 - `bd remember` is only for short-lived context the next sessions need, such as "staging DB down until Friday". Never use it for durable knowledge.

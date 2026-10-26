@@ -42,11 +42,12 @@
 ## Work (beadwork plugin)
 
 - Verify before every PR: `<command>`.
-- Delivery: `BEADWORK_DELIVERY=<pr | stack | local>`; default `pr`. This selects mechanics, not permission to push or merge. Existing authorization: <what may be pushed/integrated, by whom>.
+- Delivery: `BEADWORK_DELIVERY=<auto | pr | stack | local>`; default `auto` (agent chooses mechanics). This selects mechanics, not permission to push or merge. Existing authorization: <what may be pushed/integrated, by whom>.
 - Review size: target ~<400> hand-written lines per PR; split at useful seams. Mark a hard cap explicitly if this project needs one. Delivery evidence includes `Bead: <id>` and `Docs impact:`.
 - must-ask here: changes to approved intent, protected boundaries or external actions without authorization, plus <project categories>. Existing authorization counts. Reversible preferences within delegated authority may proceed on a recorded default.
 - Agents may re-cut approved work while preserving every acceptance criterion, and make necessary adjacent fixes outside expected paths. Explain and verify scope expansions; unrelated work stays separate.
 - Protected paths/actions: <explicit boundaries; expected role paths are advisory>.
 - Beads close after verified integration: PRs through `close-merged.sh`; local delivery by <owner>. Epic closure: <delegated after evidenced criteria and required sign-offs | operator>.
 - Delegation: <implementation and review allowed | project restriction>. One bead owner integrates results and maintains evidence; isolate independent writes and serialize mutations of shared resources.
-- Roles: one card per role in `.beads/roles/<role>.md` (legacy `.claude/roles/` also works), from claude-shared-skills' `templates/role.md`.
+- Roles are optional queue filters. Several Claude/Codex workers may share a role, with distinct actors and isolated checkouts. Add a card in `.beads/roles/<role>.md` only for useful project context or explicit protections (legacy `.claude/roles/` also works).
+- Availability: `BEADWORK_MODE=attended` or `unattended`; current operator instructions take precedence. Agents choose conversation boundaries in either mode and retain durable progress in Beads.

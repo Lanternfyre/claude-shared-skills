@@ -56,7 +56,7 @@ To cut a whole plan, epic or milestone into beads, follow [cutting.md](cutting.m
 ## Links and labels
 
 - `--deps blocked-by:<id>` only for real ordering. `discovered-from:<id>` for work found while doing another bead.
-- Labels: `role:<role>` (who may claim it), `topic:<area>`, plus the project's own (milestone, objective).
+- Labels: `role:<role>` (optional queue routing), `topic:<area>`, plus the project's own (milestone, objective).
 - Priority 0–4, default 2. Defer what isn't needed yet (`--defer`), so `bd ready` stays honest.
 
 ## Create

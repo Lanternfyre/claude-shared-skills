@@ -23,9 +23,9 @@ Shared Beads and documentation skills for **Claude Code and Codex**, with one so
 | Merge gate | A Beads gate per pull request (`gh:pr`, the PR URL) that keeps the bead out of the ready list until the PR merges; such beads carry the `pr-open` label |
 | Dolt | The versioned SQL database Beads stores its data in |
 | `PRIME.md` | An optional project file in `.beads/` that Beads prints at session start, holding the project's own workflow rules |
-| Day / night | Agents ask the operator questions straight away by day; at night they queue them for the morning grill |
+| Attended / unattended | Same work loop; ask the available operator now or queue questions for later |
 | Spike | A bounded investigation comparing plausible alternatives with evidence; any reused code still needs normal delivery checks |
-| Night run | An unattended work loop that runs while the operator sleeps |
+| Worker run | A bounded loop that can reuse or refresh conversations across beads |
 | home-lab, Necronia v2 | Our two projects that pilot the documentation standard |
 | claude-workbench | The earlier tooling repo these skills replace |
 
@@ -36,12 +36,12 @@ Shared Beads and documentation skills for **Claude Code and Codex**, with one so
 | Skill | Run by | Context cost until used |
 |---|---|---|
 | [`bead`](plugins/beadwork/skills/bead/SKILL.md): write or split a work item (Task / Guardrails / Acceptance Criteria); cut a plan into beads | agent | one description |
-| [`question`](plugins/beadwork/skills/question/SKILL.md): raise a decision or surprise; day/night handling; provisional defaults | agent | one description |
-| [`/beadwork:slice [night]`](plugins/beadwork/skills/slice/SKILL.md): claim → build or delegate → verify → PR or local integration; bug investigation, spikes, night runs | operator or scheduler | none |
+| [`question`](plugins/beadwork/skills/question/SKILL.md): raise a decision or surprise; operator availability; provisional defaults | agent | one description |
+| [`/beadwork:slice [attended/unattended]`](plugins/beadwork/skills/slice/SKILL.md): claim → build or delegate → verify → PR or local integration; bug investigation, spikes, night runs | operator or scheduler | none |
 | [`/beadwork:grill`](plugins/beadwork/skills/grill/SKILL.md): one auq batch of every open question; record the answers; tidy memories | operator | none |
 | [`/beadwork:review-chunk`](plugins/beadwork/skills/review-chunk/SKILL.md): digest of PRs awaiting review; closes merged beads | operator | none |
 
-**Hook (SessionStart):** prints `.beads/PRIME.md` (if present), `bd` memories, and status: day/night, ready work, questions, review queue, role and away mode. It is silent in repos without `.beads/`. Codex requires hook trust; if startup context is absent, run the same hook explicitly through normal approvals. See the [beadwork runtime guide](plugins/beadwork/runtime.md).
+**Hook (SessionStart):** prints `.beads/PRIME.md` (if present), `bd` memories, and status: availability, ready work, questions, both review queues, role and the exact active bead when managed. It is silent in repos without `.beads/`. Codex requires hook trust; if startup context is absent, run the same hook explicitly through normal approvals. See the [beadwork runtime guide](plugins/beadwork/runtime.md).
 
 ### `docs`: the Git side (durable knowledge)
 
@@ -80,7 +80,7 @@ After refreshing a cached Codex package, start a new session. For a consequentia
 
 ## Agent authority and the remaining boundaries
 
-An approved outcome gives the agent room to implement it. It may split or combine beads while preserving every acceptance criterion, make necessary adjacent fixes outside expected paths, delegate implementation, and choose routine internal details. It records consequential choices and evidence without asking for the same authority again. [The work loop](plugins/beadwork/skills/slice/SKILL.md) describes ownership and delivery; [the decision record](docs/decisions/ADR-20261026-134412-fb40-give-agents-authority-within-approved-outcomes.md) explains the trade-offs.
+An approved outcome gives the agent room to implement it. It may split or combine beads while preserving every acceptance criterion, make necessary adjacent fixes outside expected paths, delegate implementation, and choose routine internal details. It records consequential choices and evidence without asking for the same authority again. [The work loop](plugins/beadwork/skills/slice/SKILL.md) describes ownership and delivery; [the decision record](docs/decisions/ADR-20261026-173924-ce2c-let-workers-choose-conversation-boundaries-within-one-shared.md) explains the trade-offs.
 
 Beads owns execution status; design plans and roadmaps remain in docs. One current progress record replaces repeated handover summaries. Docs checks scale with the change: a small factual edit gets a focused check, while new pages and consequential guidance get a reader walkthrough.
 
@@ -92,8 +92,8 @@ These constraints remain deliberate and should be reviewed when they impede an a
 | Ownership and evidence | Concurrent writes to another owner's work, closing unverified or unintegrated work | Coordinate ownership; meet the criteria rather than bypass them |
 | Hard timeout recovery | Starting another session in a checkout whose writers may still be active | Confirm delegates stopped, preserve work and reconcile ownership before restarting |
 | Critical docs | Substantive architecture, security, operational or external guidance needs owner review | Owner may delegate review; small meaning-preserving repairs need no separate sign-off |
-| Night eligibility and budget | Role approval, `night-ok`, cutoff, review cap and session time box | Project/operator config; agents do not grant themselves eligibility |
-| Unattended external actions | PR merges, default-branch pushes, live-system changes, secrets and shared data/history | Keep separate from the night runner; explicit project authority is required for local unattended integration |
+| Run scope and budget | Selected queue, required project checks, review cap and fixed run deadline | Configure the authorized run; a fresh conversation does not extend its budget |
+| External actions | Pushes, merges, live-system changes and protected resources | Existing explicit authorization applies in both availability modes |
 
 Expected role paths and review-size targets are advisory. An explicit project hard limit still binds. A reversible default does not authorize a protected action, and silence is never approval.
 
@@ -152,52 +152,38 @@ If a Beads web board serves the same Dolt server, add the new database to the bo
 
 Use `/docs:init` if the repo needs documentation onboarding. Existing layouts and design plans can stay; adoption does not require a documentation migration.
 
-**Roles** (optional): set `BEADWORK_ROLE` per box. A role claims matching beads; with no role, the session can claim any non-human bead. A role card defines purpose, expected paths, protected paths, engine-specific models/effort and night eligibility. Resolve it through `BEADWORK_ROLE_CARD`, `BEADWORK_ROLE_DIR/<role>.md`, an existing `.beads/roles/<role>.md`, or legacy `.claude/roles/<role>.md`. Automatic night-role path changes cannot replace approved policy before review; explicit operator overrides remain available. Start with [the template](templates/role.md).
+**Roles** are optional queue filters. Several Claude or Codex workers may share a role; each gets a unique actor and a separate checkout/worktree. Keep a role card only when it adds useful project context or explicit protections. Existing `.beads/roles/`, legacy `.claude/roles/`, and explicit card/directory overrides remain supported. [Role template](templates/role.md).
 
-**Upgrade to beadwork 0.6:** `paths:` now means expected scope. [`role-check.sh`](plugins/beadwork/scripts/role-check.sh) reports adjacent changes without rejecting them; `protected:` globs block even inside expected paths. Move any intended hard allowlist into an explicit project rule or the card's Never section before relying on the new behavior. The checker compares committed changes using the approved policy ref, independently of a stack's diff base. Explicit authorizations are recorded exceptions, not edits made to the card to pass its own check. This is an agent-run check, not CI enforcement.
+**Delivery** defaults to `auto`: the agent chooses independent PRs, a stack where dependencies justify it, or the project's local integration workflow. `BEADWORK_DELIVERY=pr|stack|local` is an explicit override for new work. Existing beads retain their recorded delivery. The mode never grants permission to push or merge. [Delivery details](plugins/beadwork/skills/slice/delivery.md).
 
-**Delivery:** `BEADWORK_DELIVERY=pr` uses independent PRs by default, `stack` opts into stacked PRs, and `local` uses the project's authorized local integration workflow. [Delivery modes](plugins/beadwork/skills/slice/delivery.md) explains gates, closure and work awaiting integration. The mode never grants permission to push or merge.
+### Run a worker
 
-Existing boxes continuing an open stack should set `BEADWORK_DELIVERY=stack` before their next run. The new default does not migrate or flatten existing branches. Keep the current bead's recorded delivery mode when resuming it, and use the configured default for new work.
+From an isolated project checkout/worktree, use the installed plugin root:
 
-**Environment** (the box or launching shell; Claude Code also supports project `.claude/settings.json` `env`):
+```bash
+python3 <plugin-root>/scripts/run.py --engine claude --role ops --time-budget 2h
+python3 <plugin-root>/scripts/run.py --engine codex --bead <id> --max-beads 1 --dry-run
+python3 <plugin-root>/scripts/run.py --engine codex --bead <id> --max-beads 1
+```
 
-| Variable | Default | Meaning |
-|---|---|---|
-| `BEADWORK_ENGINE` | `claude` | Night runner: `claude` or `codex` |
-| `BEADWORK_ROLE_CARD` | resolved by role | Explicit role card path |
-| `BEADWORK_ROLE_DIR` | unset | Role-card directory; otherwise `.beads/roles/` then legacy `.claude/roles/` |
-| `BEADWORK_ROLE` | unset (any) | `role:<x>` label to claim, and `asked-by:<x>` on questions |
-| `BEADWORK_DELIVERY` | `pr` | `pr`, `stack`, or `local`; mechanics, not push/merge authorization |
-| `BEADWORK_STATE_DIR` | `~/.local/state/beadwork` | night-run logs and reviewed role-card cache |
-| `BEADWORK_TZ` | `Europe/Warsaw` | clock for day/night |
-| `BEADWORK_DAY` | `08-23` | day window, in hours |
-| `BEADWORK_NIGHT_CUTOFF` | `06:00` | the night loop starts no new bead from this time until the day ends |
-| `BEADWORK_BEAD_TIMEBOX` | `2h` | how long one night session may run before the loop parks its bead |
-| `BEADWORK_NO_MEMORIES` | `0` | `1` keeps `bd` memories out of session start |
+The default is attended availability and automatic delivery. Omit `--role` to use the project's authorized ready queue without role filtering. `--label` narrows it. `--mode unattended` queues questions; it does not select a different engineering process. Model and effort overrides are optional launcher arguments and otherwise use the selected host's defaults.
 
-### Night runs
+The runner claims one exact bead at a time and maintains its heartbeat. The agent chooses `continue`, `fresh` or `stop` at a useful handoff. Related beads may share a conversation; auto-compaction remains the host's responsibility. A fresh conversation retains the fixed run deadline and unique worker identity. All concurrent writers need distinct checkouts/worktrees; the runner refuses a second managed worker in its checkout.
 
-A bead is worked overnight only when all of this holds:
-- **The box has a role** (`BEADWORK_ROLE`) whose card says `night: yes`. Claude uses `model`/`effort`; Codex uses `codex_model`/`codex_effort`. Configure a model supported by that engine and account; effort is optional. No model aliases or effort levels are translated between engines.
-- **The bead carries `role:<role>` and `night-ok`.** The operator grants night eligibility. It must be ready, or in stack mode blocked only by verified implementation work in its own stack. Epics, decisions, `human` and closed-unmerged PR beads are not new implementation work.
-- **The project has a verify command:** `bd config set custom.beadwork-verify "<command>"`. Optionally set `custom.beadwork-review-cap` (default 12).
+State and logs live under the checkout's Git directory in `beadwork/`. Substantive progress stays on the bead. Clean pauses resume from saved state. Unclean stops require evidence that old writers stopped and ownership is reconciled before `--recover`; an expired budget requires an explicit newly authorized budget. See the [runtime guide](plugins/beadwork/runtime.md) for recovery and the [session protocol](plugins/beadwork/skills/slice/sessions.md) for agent behavior.
 
-The loop is [`scripts/night-run.sh`](plugins/beadwork/scripts/night-run.sh), run inside the box in the project's checkout. A homelab scheduled job will start it at 23:05 (bead `skills-wp1.6`); until then, start it by hand. `--dry-run` shows what it would do now, and why. Between beads it stops starting new work when:
-1. it is between 06:00 and 23:00 (no new bead after the 06:00 cutoff);
-2. pending review reaches the cap (`pr-open` beads, or `integration-pending` in local mode);
-3. the project has no verify command;
-4. the box has no role, the card is missing/not night-enabled, or its selected engine has no model or an invalid effort;
-5. no `night-ok` bead is left for the role;
-6. a session hit the usage limit;
-7. two sessions in a row failed, or any session ran past its hard time box and needs recovery;
-8. the time box (`BEADWORK_BEAD_TIMEBOX`) is invalid, the engine is not `claude`/`codex`, or delivery is not `pr`/`stack`/`local`.
+The runner reads both PR and local integration queues for its review cap, and stops on an exhausted budget, a model/ownership error, or no eligible work. It never guesses which bead to release after a failure. Project-specific acceptance checks and integration authorization still apply. Subprocess tests exercise the mechanics; live box trials are reported separately and depend on that box's credentials, tool versions and sandbox support.
 
-Set `BEADWORK_ENGINE=codex` in a Codex box or launching shell and provide `codex_model` in its approved role card. The runner uses `codex exec` with workspace-write sandboxing, normal approvals and a final-message file; it never bypasses hook trust or approvals. Engine behavior was verified with stub processes; a live unattended model run remains unverified.
+### Upgrade existing workers
 
-Each session gets a park-by time, a quarter of the time box before it ends. After it, the session parks its bead before starting the finish steps, and a later session continues it.
+- `night-run.sh` is a compatibility launcher for the shared runner, retaining its legacy scheduled window and `night-ok` queue filter. New runs can use `run.py` directly with an authorized queue. There is no mandatory per-bead session reset or role card.
+- Role model/effort/night fields no longer configure the shared runner. Use launcher arguments and explicit availability; preserve meaningful project prohibitions in project instructions or the role card. Do not drop a real clean-room or resource boundary during migration.
+- `paths:` is advisory expected scope; `protected:` and explicit project restrictions remain boundaries. The role checker compares the approved policy independently from the delivery diff.
+- `auto` is the new delivery default. It never converts an existing open stack or local handoff to another method. Review both queues even when the default changes.
+- Automatic morning-summary chores are removed. Work evidence remains on its beads; `grill morning` posts held questions and can consume legacy summaries. Scheduling that command belongs to the project.
+- Defer new `go`/`plan` approval commands until a real task demonstrates a need. An approved outcome already authorizes ordinary decomposition and implementation choices.
 
-It also stops when Beads is unreachable. A GitHub sweep failure leaves uncertain review work alone and permits independently ready work. Local delivery skips GitHub entirely. A timed-out session does not cause the runner to guess which claim to release: inspect its log and checkout, confirm delegates stopped, and reconcile ownership or let the lease expire. When it stops, it files a **morning-summary** bead: why it stopped, plus one line per session. The morning card, `/beadwork:grill morning`, posts these with the night's held questions as one card when the day starts. A homelab job will run it at 08:00 (bead `skills-wp1.6`); until then, run it by hand. Away mode does not stop nights: it only holds questions, as at night.
+The startup hook uses `BEADWORK_MODE` (`attended` by default), `BEADWORK_DELIVERY` (`auto`), optional `BEADWORK_ROLE`/card overrides, and `BEADWORK_NO_MEMORIES`. The runner exports exact active-bead and worker identity context automatically. Legacy timezone/cutoff variables apply only to the compatibility night launcher.
 
 ## Deliberately not here
 

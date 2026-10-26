@@ -1,10 +1,10 @@
 ---
 adr: ADR-20261026-134412-fb40
 title: "Give agents authority within approved outcomes"
-status: Accepted
+status: Superseded
 date: 2026-10-26
 supersedes: [ADR-20261025-110438-9a48]
-superseded_by:
+superseded_by: ADR-20261026-173924-ce2c
 amends: []
 amended_by: []
 refs: []

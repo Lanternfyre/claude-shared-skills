@@ -1,6 +1,6 @@
 ---
 name: bead
-description: Write, split or review a Beads work item (task, bug, chore, spike, epic) so an agent with none of your context can finish it. Use before any `bd create` of work, when a bead is too big for one session, and when cutting a plan or epic into beads.
+description: Write, split or review a Beads work item (task, bug, chore, spike, epic) so an agent with none of your context can finish it. Use before any `bd create` of work, when a bead turns out too big or wrongly cut, and when cutting a plan or epic into beads.
 ---
 
 # Writing a bead
@@ -14,6 +14,7 @@ A bead is a contract with an agent that has none of your context. If it cannot b
 ```markdown
 ## Task
 What and why, in plain words and the project's glossary terms. One outcome.
+Never how: the approach belongs to whoever builds it. If it matters, link the ADR that decided it.
 Links: the requirement, objective (OBJ-n), ADR or spec it implements.
 
 ## Guardrails
@@ -39,7 +40,9 @@ Per type:
 
 ## Size
 
-One bead fits one session with at most one compaction. If it is bigger, split it at seams where each child can be verified on its own. Make the parent an epic (`--parent`) or chain the children with deps. Never split into "write the code" and "write the tests".
+One bead is one checkable outcome, with PRs small enough to review. It may take several sessions, because the progress record carries it across, and several PRs stacked on each other. Split only when the outcome itself splits, at seams where each child can be verified on its own. Make the parent an epic (`--parent`) or chain the children with deps. Never split into "write the code" and "write the tests".
+
+**Re-cut instead of forcing.** If a bead turns out too big, wrongly cut, or built on a wrong assumption, don't push it through. Propose the re-cut through the `question` skill: the new beads with their outcomes, and what this bead keeps. The default is to file the new beads with `--deps discovered-from:<id>` and carry on with what this bead keeps. Never weaken a bead's Acceptance Criteria yourself. Moving a criterion to a new bead is part of the proposal.
 
 To cut a whole plan, epic or milestone into beads, follow [cutting.md](cutting.md).
 
@@ -59,6 +62,8 @@ bd create --title "Reject expired refresh tokens" -t task -l role:impl,topic:aut
 ## Example
 
 Bad: *"Fix login"*, with acceptance *"login works"*.
+
+Bad Task, because it says how: *"Add `if (token.ExpiresAt < now) throw` to `RefreshHandler` before it issues the token."* The builder may find a better place, such as the validator every token already passes through.
 
 Good: *"Reject expired refresh tokens"*.
 - **Task:** a refresh token past its expiry still issues an access token. It must be refused (OBJ-2: no session outlives logout).

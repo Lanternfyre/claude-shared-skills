@@ -18,7 +18,7 @@ A wide refactor is three beads, each merging green on its own:
 ## Steps
 
 1. **Read the source in full:** the plan, its decisions, and the objectives and ADRs it touches. Anything still undecided becomes a decision bead first (the `question` skill), and the slices that depend on it get a dep on it.
-2. **Draft the cut.** One line per slice: title, what lands (the check), scope fence, size. Start with the thinnest end-to-end path, then widen.
+2. **Draft the cut.** One line per slice: title, what lands (the check, never how to build it), scope fence, size. Start with the thinnest end-to-end path, then widen. Size by outcome, not by session: a slice may take several sessions and several stacked PRs.
 3. **Edges.** A slice depends on another only if it cannot be built or verified without it, not because it "feels later". Fewer edges mean more work in parallel.
 4. **Ask once, create nothing yet.** Post the cut as one auq `tasks` card: for each slice its id, title, `required` or `optional`, deps, and `ready` or `blocked`. The `context` says what the epic delivers and your recommended order.
 5. **Create.**

@@ -17,11 +17,11 @@ The scheduled job runs `/beadwork:grill morning` when the day starts. It posts *
 
 1. Run `${CLAUDE_PLUGIN_ROOT}/scripts/close-merged.sh`.
 2. Collect:
-   - **Night summaries:** `bd --readonly list -l morning-summary --status open --json`. Their `## Summary` sections give the night in a few lines.
+   - **Night summaries:** `bd --readonly list -l morning-summary --status open --json`, keeping those whose `metadata.auq_question_id` is not set. Their `## Summary` sections give the night in a few lines.
    - **Held questions:** `bd --readonly list -t decision --status open --json`, keeping those whose `metadata.auq_card` is set and `metadata.auq_question_id` is not. That metadata is the card the agent wrote at night, as JSON text.
    - **Questions already live in auq** (`auq_question_id` set): never post them again. Mention how many are waiting.
 3. If there is nothing to post, post nothing and exit.
-4. Make one `ask_user_questions` call with `requester_name: "morning"`:
+4. Make one `ask_user_questions` call with `requester_name: "morning"` and `block_until_complete: false`. The call still waits up to 90 s; a `pending` result is normal here and means nothing more to do. Never wait further, and never post again:
    - **The night comes first:** a `single_select` "Night summary", with the summaries as plain prose in `context` and the options "Read" and "Something looks wrong". The bead ids go in `agent_notes`.
    - **Then each held card, as stored:** first the cards whose decision blocks work (it appears in some bead's `blocked_by` in `bd --readonly blocked --json`), then the rest, grouped by `topic:`.
 5. Store the ids at once, because the post is the only copy: on each decision bead and each summary bead, `bd update <id> --set-metadata auq_question_id=<its question id> --set-metadata auq_thread_id=<thread id>`.

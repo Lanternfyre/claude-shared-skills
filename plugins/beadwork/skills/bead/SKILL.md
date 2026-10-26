@@ -42,7 +42,7 @@ Per type:
 
 One bead is one checkable outcome, with PRs small enough to review. It may take several sessions, because the progress record carries it across, and several PRs stacked on each other. Split only when the outcome itself splits, at seams where each child can be verified on its own. Make the parent an epic (`--parent`) or chain the children with deps. Never split into "write the code" and "write the tests".
 
-**Re-cut instead of forcing.** If a bead turns out too big, wrongly cut, or built on a wrong assumption, don't push it through. Propose the re-cut through the `question` skill: the new beads with their outcomes, and what this bead keeps. The default is to file the new beads with `--deps discovered-from:<id>` and carry on with what this bead keeps. Never weaken a bead's Acceptance Criteria yourself. Moving a criterion to a new bead is part of the proposal.
+**Re-cut instead of forcing.** If a bead turns out too big, wrongly cut, or built on a wrong assumption, don't push it through. Propose the re-cut through the `question` skill: the new beads with their outcomes, and which criteria move to them. Until the operator answers, the bead keeps every Acceptance Criterion. Build what serves them, and park the bead when nothing more can be done. Never move or weaken a criterion on a default.
 
 To cut a whole plan, epic or milestone into beads, follow [cutting.md](cutting.md).
 

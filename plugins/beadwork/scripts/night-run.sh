@@ -10,7 +10,7 @@
 #   cutoff     no new bead from BEADWORK_NIGHT_CUTOFF (06:00) until the day ends (BEADWORK_DAY's end)
 #   cap        PRs in review (pr-open beads) reached custom.beadwork-review-cap (default 12)
 #   verify     the project has no verify command (custom.beadwork-verify): no nights at all
-#   card       no role, no role card, or the card says night: no
+#   card       no role, no role card, the card says night: no, or its effort is not a level
 #   nothing    no night-ok bead for the role, ready or blocked (blocked ones may be own-stack)
 #   limit      a session hit the usage limit
 #   failures   two sessions in a row failed or timed out (BEADWORK_BEAD_TIMEBOX, default 2h)
@@ -51,7 +51,7 @@ reviewed_card() {
 
 # Each check prints "go" or "stop <rule>: <reason>".
 check() {
-  local now night_start n cap pr verify model night eligible
+  local now night_start n cap pr verify model effort night eligible
   now=${BEADWORK_NOW:-$(TZ=$tz date +%H:%M)}
   night_start="${day#*-}:00"
   n=$(minutes "$now")
@@ -63,6 +63,9 @@ check() {
   night=$("$here/role-card.sh" "$c" night 2>/dev/null) || { echo "stop card: no readable role card at $card"; return; }
   [ "$night" = yes ] || { echo "stop card: $card says night: $night"; return; }
   model=$("$here/role-card.sh" "$c" model 2>/dev/null) || { echo "stop card: $card has no model"; return; }
+  effort=$("$here/role-card.sh" "$c" effort 2>/dev/null) || effort=default  # no field: claude's default
+  case "$effort" in default|low|medium|high|xhigh|max) ;;
+    *) echo "stop card: $card has effort: $effort; use low, medium, high, xhigh or max"; return ;; esac
 
   verify=${BEADWORK_VERIFY-$(cfg custom.beadwork-verify)}
   [ -n "$verify" ] || { echo "stop verify: no verify command (bd config set custom.beadwork-verify \"<command>\")"; return; }
@@ -78,7 +81,7 @@ check() {
   eligible=$(( ready + blocked ))
   [ "$eligible" -gt 0 ] || { echo "stop nothing: no night-ok bead for role $role"; return; }
 
-  echo "go model=$model eligible=$eligible prs=$pr/$cap"
+  echo "go model=$model effort=$effort eligible=$eligible prs=$pr/$cap"
 }
 
 # Pushes to the default branch and branch deletions are refused in this checkout.
@@ -131,8 +134,10 @@ while :; do
   verdict=$(check); say "$verdict"
   case "$verdict" in stop*) reason=${verdict#stop }; break ;; esac
   model=$(printf '%s' "$verdict" | sed -n 's/.*model=\([^ ]*\).*/\1/p')
+  effort=$(printf '%s' "$verdict" | sed -n 's/.*effort=\([^ ]*\).*/\1/p')
+  args=(--model "$model"); [ "$effort" = default ] || args+=(--effort "$effort")
   out=$(mktemp)
-  CLAUDE_CODE_SYNC_PLUGIN_INSTALL=1 timeout "$timebox" claude -p "/beadwork:slice night" --model "$model" > "$out" 2>&1
+  CLAUDE_CODE_SYNC_PLUGIN_INSTALL=1 timeout "$timebox" claude -p "/beadwork:slice night" "${args[@]}" > "$out" 2>&1
   rc=$?
   cat "$out" >> "$log"
   status=$(grep -o 'BEADWORK-NIGHT: .*' "$out" | tail -1)

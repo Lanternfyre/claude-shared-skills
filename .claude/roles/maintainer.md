@@ -1,6 +1,7 @@
 ---
 role: maintainer
 model: opus
+effort: high
 night: yes
 paths: plugins/**, templates/**, docs/**, README.md, .claude-plugin/**, .beads/config.yaml
 ---

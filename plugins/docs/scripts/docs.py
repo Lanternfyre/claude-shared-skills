@@ -348,6 +348,10 @@ def main(argv=None):
     args = parser.parse_args(argv)
 
     root = args.root.resolve()
+    if not root.is_dir():
+        # A typo'd root would otherwise pass the check with nothing read, or grow a stray tree.
+        print(f"docs: {args.root} is not a directory", file=sys.stderr)
+        return 2
     adr_dir = root / "docs" / "decisions"
     if args.cmd == "adr":
         print(new_adr(adr_dir, args.title).relative_to(root))

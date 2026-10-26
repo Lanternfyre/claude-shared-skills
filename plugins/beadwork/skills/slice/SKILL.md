@@ -31,7 +31,7 @@ It runs the merge check, then closes every `pr-open` bead whose PRs have all mer
 - **Review feedback** (PR comments, or the operator asking): fix it in a new PR on top of the stack, gated to the same bead. Never rework a lower PR.
 - **Conflicts** with the main branch: `gh stack rebase`, then `gh stack push`.
 
-Details, limits and the denied-PR case are in [stack.md](stack.md).
+A new PR opened here goes through the Finish steps like any other: verify, the role fence, the self-review, the body and its gate. Details, limits and the denied-PR case are in [stack.md](stack.md).
 
 ## 2. Own questions first
 
@@ -95,7 +95,7 @@ Run `while sleep 120; do bd hb <id> || break; done` as a background command. Sto
 3. **Promote** what future work needs into Git docs, in this PR, with the `write` skill: architecture decisions → an ADR (the `adr` skill), constraints → `docs/architecture/`, domain rules → `docs/domain/`, terms → `docs/domain/glossary.md`. Notes that only mattered for this bead stay in the bead.
 4. **Docs impact.** Decide what the change does to the docs: contract, behaviour, data, security, operations, architecture, or internal only. If any docs page changed, finish it with the `write` skill (its check and reader walkthrough). A security or public-contract change with no matching docs is `unknown`, never `none`.
 5. **Role fence.** With a role, `${CLAUDE_PLUGIN_ROOT}/scripts/role-check.sh .claude/roles/<role>.md` must pass before any PR opens. It lists files outside the card's paths, judged by the card as the main branch has it. Move such a change out of the PR, or raise it through the `question` skill. Never edit the card to fit.
-6. **Self-review.** Run Claude Code's built-in `code-review` skill on the changes this PR will carry: the commits on your branch since the branch below it in the stack. Fix the findings you agree with, then run verify again if anything changed. Each finding you don't fix goes in the PR body with a reason. The review's own agents don't count against the three sub-agents.
+6. **Self-review.** For each PR, run Claude Code's built-in `code-review` skill (the Skill tool) on that PR's own commits, with the arguments `medium <the branch below>..<your branch>`. `gh stack view` shows the branch below; at the bottom of a stack it is the default branch. Fix the findings you agree with. If that changed anything, run steps 1, 4 and 5 again. Each finding you don't fix goes in the PR body with a reason. The review's own agents don't count against the three sub-agents.
 7. **Open the PR on the stack:** `gh stack submit --auto --open`, then `gh pr edit <PR URL> --body-file pr.md` for each new PR. A bead that needs more than one PR to stay under the size cap adds a branch per PR in the same way. Each PR body has, in this order:
    - `Bead: <id>`;
    - what and why, in plain words;

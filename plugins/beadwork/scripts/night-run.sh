@@ -63,9 +63,11 @@ check() {
   night=$("$here/role-card.sh" "$c" night 2>/dev/null) || { echo "stop card: no readable role card at $card"; return; }
   [ "$night" = yes ] || { echo "stop card: $card says night: $night"; return; }
   model=$("$here/role-card.sh" "$c" model 2>/dev/null) || { echo "stop card: $card has no model"; return; }
-  effort=$("$here/role-card.sh" "$c" effort 2>/dev/null) || effort=default  # no field: claude's default
-  case "$effort" in default|low|medium|high|xhigh|max) ;;
+  effort=$("$here/role-card.sh" "$c" effort 2>/dev/null | tr '[:upper:]' '[:lower:]')  # empty: claude's default
+  case "$effort" in ""|low|medium|high|xhigh|max) ;;
     *) echo "stop card: $card has effort: $effort; use low, medium, high, xhigh or max"; return ;; esac
+  if [ -n "$effort" ] && ! claude --help 2>/dev/null | grep -q -- '--effort'; then
+    echo "stop card: $card sets effort, but this claude has no --effort; update claude"; return; fi
 
   verify=${BEADWORK_VERIFY-$(cfg custom.beadwork-verify)}
   [ -n "$verify" ] || { echo "stop verify: no verify command (bd config set custom.beadwork-verify \"<command>\")"; return; }
@@ -81,7 +83,7 @@ check() {
   eligible=$(( ready + blocked ))
   [ "$eligible" -gt 0 ] || { echo "stop nothing: no night-ok bead for role $role"; return; }
 
-  echo "go model=$model effort=$effort eligible=$eligible prs=$pr/$cap"
+  echo "go model=$model effort=${effort:-default} eligible=$eligible prs=$pr/$cap"
 }
 
 # Pushes to the default branch and branch deletions are refused in this checkout.

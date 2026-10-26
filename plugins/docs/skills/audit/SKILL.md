@@ -8,11 +8,13 @@ allowed-tools: Bash(python3 ${CLAUDE_PLUGIN_ROOT}/scripts/docs.py *)
 
 # Documentation audit
 
+Use the [host runtime guide](../../runtime.md) for invocation, helper paths and startup context.
+
 With no argument, run all four parts. Read the `write` skill first: its layout, critical pages and contradiction rules apply here.
 
 ## 1. Structure
 
-`python3 ${CLAUDE_PLUGIN_ROOT}/scripts/docs.py check` covers ADR headers and links, relative links and anchors, and ids defined once and resolving (code comments included). Also list:
+`python3 "<plugin-root>/scripts/docs.py" check` covers ADR headers and links, relative links and anchors, and ids defined once and resolving (code comments included). Also list:
 - pages no link from the root README reaches;
 - section folders with no `README.md`.
 
@@ -21,7 +23,8 @@ With no argument, run all four parts. Read the `write` skill first: its layout, 
 Compare what the docs claim with the code, config, migrations and OpenAPI exports. Start with the riskiest areas: security, public contracts, operations, then data. Give each topic one outcome:
 - **consistent:** nothing to do;
 - **update-safe:** the docs are factually wrong about what is built. Fix them in a PR;
-- **review-required:** the code contradicts an approved requirement or an accepted ADR. File a decision bead (the `write` skill's contradiction format). Never edit the requirement or the ADR to match;
+- **implementation bug:** clear approved intent is not implemented. File or fix the bug within scope; preserve the requirement and ADR history;
+- **review-required:** authoritative intent is ambiguous, or fixing the conflict would change it. File a decision (the `write` skill's contradiction format);
 - **unknown:** you could not check it. Say what is missing.
 
 A security area or public contract with no docs at all is a **coverage gap**, never "consistent".
@@ -41,7 +44,7 @@ Look for:
 
 Prepare 3–5 tasks, at least one for each reader the project has: newcomer, change, operate, external user. The `write` skill's [walkthrough.md](../write/walkthrough.md) has examples.
 - Run the fresh-agent walkthrough first, and fix the dead ends it finds.
-- Then send the operator one auq `form` card. Each task has three fields: done (yes or no), where they got stuck (text), and anything that seemed wrong (text).
+- Then ask the operator through the available question channel, in one batch: done (yes or no), where they got stuck, and anything that seemed wrong. Report human review as pending while you continue independent fixes.
 - The operator follows the tasks from the rendered README in the Git host, not with an agent.
 
 ## Report

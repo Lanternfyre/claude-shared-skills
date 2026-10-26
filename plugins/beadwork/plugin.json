@@ -1,0 +1,14 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "beadwork",
+  "version": "0.6.0",
+  "description": "Beads + auq work loop: write beads, raise questions, claim and ship slices, grill the operator, digest review chunks.",
+  "author": {
+    "name": "Adrian Jutrowski"
+  },
+  "extensions": {
+    "com.openai": {
+      "hooks": "./hooks/codex.json"
+    }
+  }
+}

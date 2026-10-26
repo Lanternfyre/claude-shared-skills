@@ -1,0 +1,6 @@
+interface:
+  display_name: "Review Chunk"
+  short_description: "Review pending PRs or local integration evidence"
+
+policy:
+  allow_implicit_invocation: false

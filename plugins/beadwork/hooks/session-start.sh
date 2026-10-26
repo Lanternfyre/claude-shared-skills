@@ -6,7 +6,7 @@
 #     and the away switch.
 # Silent in projects without a .beads/ workspace. Needs bd; jq for the ready count.
 set -u
-cd "${CLAUDE_PROJECT_DIR:-$PWD}" 2>/dev/null || exit 0
+cd "${BEADWORK_PROJECT_DIR:-${CLAUDE_PROJECT_DIR:-$PWD}}" 2>/dev/null || exit 0
 [ -d .beads ] && command -v bd >/dev/null 2>&1 || exit 0
 
 if ! bd --readonly ping >/dev/null 2>&1; then
@@ -32,15 +32,24 @@ if ((10#$h >= 10#${win%-*} && 10#$h < 10#${win#*-})); then mode=day; else mode=n
 role=${BEADWORK_ROLE:-}
 
 jlen() { jq length 2>/dev/null || echo '?'; }
-ready=$(bd --readonly ready ${role:+--label "role:$role"} --exclude-type epic,decision --exclude-label human --json 2>/dev/null | jlen)
+ready=$(bd --readonly ready ${role:+--label "role:$role"} --exclude-type epic,decision --exclude-label human,pr-open,pr-closed --json 2>/dev/null | jlen)
 asked=$(bd --readonly count -l human ${role:+-l "asked-by:$role"} --status open 2>/dev/null || echo '?')
-review=$(bd --readonly count -l pr-open 2>/dev/null || echo '?')
+review_label=pr-open
+[ "${BEADWORK_DELIVERY:-pr}" != local ] || review_label=integration-pending
+review=$(bd --readonly count -l "$review_label" 2>/dev/null || echo '?')
 away=$(bd --readonly list -l operator:away --json 2>/dev/null | jlen)
 
 park=${BEADWORK_PARK_BY:+ · park by $BEADWORK_PARK_BY}  # set by the night loop
-echo "beadwork: $mode ($tz $(TZ=$tz date +%H:%M)) · ready $ready · open questions $asked · PRs in review $review${role:+ · role $role}$park"
-if [ -n "$role" ] && [ ! -f ".claude/roles/$role.md" ]; then
-  echo "beadwork: role $role has no card at .claude/roles/$role.md; work runs without its path fence or never list."
+echo "beadwork: $mode ($tz $(TZ=$tz date +%H:%M)) · ready $ready · open questions $asked · in review $review${role:+ · role $role}$park"
+card=${BEADWORK_ROLE_CARD:-}
+if [ -z "$card" ]; then
+  if [ -n "${BEADWORK_ROLE_DIR:-}" ]; then card="$BEADWORK_ROLE_DIR/$role.md"
+  elif [ -f ".beads/roles/$role.md" ]; then card=".beads/roles/$role.md"
+  else card=".claude/roles/$role.md"; fi
+fi
+if [ -n "$role" ]; then
+  if [ -f "$card" ]; then echo "beadwork: role card $card"
+  else echo "beadwork: role $role has no card at $card; recover its approved rules before editing."; fi
 fi
 script="$(cd "$(dirname "$0")/.." && pwd)/scripts/configure-beads.sh"
 want=$(sed -n 's/^CONFIG_VERSION=//p' "$script" 2>/dev/null)

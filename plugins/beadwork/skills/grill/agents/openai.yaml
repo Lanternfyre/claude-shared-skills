@@ -1,0 +1,6 @@
+interface:
+  display_name: "Grill"
+  short_description: "Batch open decisions and record operator answers"
+
+policy:
+  allow_implicit_invocation: false

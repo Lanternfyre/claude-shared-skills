@@ -1,0 +1,6 @@
+interface:
+  display_name: "Audit"
+  short_description: "Check documentation structure, drift and usability"
+
+policy:
+  allow_implicit_invocation: false

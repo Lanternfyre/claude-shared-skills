@@ -1,0 +1,6 @@
+interface:
+  display_name: "Init"
+  short_description: "Adopt documentation rules in an existing project"
+
+policy:
+  allow_implicit_invocation: false

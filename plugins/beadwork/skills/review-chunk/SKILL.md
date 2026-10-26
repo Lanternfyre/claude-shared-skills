@@ -6,9 +6,13 @@ disable-model-invocation: true
 
 # Review chunk
 
+Use the [host runtime guide](../../runtime.md) for invocation, helper paths and startup context.
+
+For `BEADWORK_DELIVERY=local`, list `bd --readonly list -l integration-pending --json` and inspect each bead's branch/commit, acceptance evidence, review findings, defaults and docs impact. Present the same digest below using commits instead of PRs; skip GitHub and merge-gate steps. Integrate or close only under existing project authorization, following the slice skill's local delivery rules.
+
 ## 1. Close merged work
 
-Run `${CLAUDE_PLUGIN_ROOT}/scripts/close-merged.sh`, the same sweep as step 1 of the `slice` skill. Beads labelled `pr-closed` go into the digest, because each one needs a decision. If the script exits non-zero, report `gh auth status` instead of a digest.
+For PR/stack delivery, run `"<plugin-root>/scripts/close-merged.sh"`, the same sweep as step 1 of the `slice` skill. Beads labelled `pr-closed` go into the digest, because each one needs a disposition. If the sweep fails, report that merge state is unverified; show available bead evidence without claiming a PR merged or closing its bead.
 
 ## 2. Collect
 

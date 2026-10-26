@@ -28,7 +28,7 @@ Cut the epic into beads with [cutting.md](cutting.md).
 
 ## Closing
 
-**Only the operator closes an epic,** and only after each Success Criterion has evidence: a PR, a CI run, a measurement, or a note of the operator's own check. Record the evidence first: `bd note <epic> "<criterion>: <evidence>"` for each one.
+**Close only after every Success Criterion has evidence** and all required integration and human sign-offs are complete. The agent may close an epic when the project delegates closure; otherwise present the evidence to the operator. Evidence can be a PR, CI run, measurement or the operator's check. Record the evidence first: `bd note <epic> "<criterion>: <evidence>"` for each one.
 
 `bd epic close-eligible` closes an epic as soon as its children are done, without looking at the Success Criteria. Agents run it only as `bd epic close-eligible --dry-run`, to list candidates for the operator. The grill or review digest can show that list. A run on 2026-10-25, with every epic still having open children, printed `No epics eligible for closure`.
 

@@ -1,0 +1,3 @@
+interface:
+  display_name: "Adr"
+  short_description: "Record architecture decisions and their trade-offs"

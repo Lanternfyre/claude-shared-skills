@@ -1,10 +1,10 @@
 ---
 adr: ADR-20261025-110438-9a48
 title: "Adopt the human-first documentation standard"
-status: Accepted
+status: Superseded
 date: 2026-10-25
 supersedes: []
-superseded_by:
+superseded_by: ADR-20261026-134412-fb40
 amends: []
 amended_by: []
 refs: []

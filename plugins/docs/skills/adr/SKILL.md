@@ -7,15 +7,17 @@ allowed-tools: Bash(python3 ${CLAUDE_PLUGIN_ROOT}/scripts/docs.py *)
 
 # Architecture decision records
 
+Use the [host runtime guide](../../runtime.md) for invocation, helper paths and startup context.
+
 `docs.py` mints ids, rebuilds the decision index (`docs/decisions/README.md`) and checks the docs. For pre-commit and CI, copy it into the repo (for example `tools/docs.py`) and run `docs.py check`.
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/scripts/docs.py adr "<title>"   # ADR-YYYYMMDD-HHMMSS-xxxx-<slug>.md, status Proposed
-python3 ${CLAUDE_PLUGIN_ROOT}/scripts/docs.py index
-python3 ${CLAUDE_PLUGIN_ROOT}/scripts/docs.py check
+python3 "<plugin-root>/scripts/docs.py" adr "<title>"   # ADR-YYYYMMDD-HHMMSS-xxxx-<slug>.md, status Proposed
+python3 "<plugin-root>/scripts/docs.py" index
+python3 "<plugin-root>/scripts/docs.py" check
 ```
 
-The page's heading is the decision's title; the id lives in the header block and the index. A design proposal is an ADR with status Proposed: there are no separate RFC or change-request documents.
+The page's heading is the decision's title; the id lives in the header block and the index. A consequential design proposal can be an ADR with status Proposed. Preserve an established proposal process; do not create a second document solely to satisfy this skill.
 
 ## Is it an ADR?
 
@@ -29,7 +31,7 @@ Where the rest goes:
 - technical constraints → `docs/architecture/`;
 - what a bead decided for itself → its PR.
 
-**An ADR records the decision and links the facts. It never restates them.** In Necronia v1, the same fact copied into several ADRs drifted into three contradicting versions.
+**An ADR records the decision and links its evidence.** Include enough context to understand the trade-off; avoid copying detailed facts maintained elsewhere.
 
 ## Header and sections
 
@@ -51,9 +53,9 @@ Keep an ADR short: one decision per ADR, and no tutorials on the technology.
 ## new
 
 1. Apply the three-part test. Read the ADRs, glossary and objectives the decision touches.
-2. If the operator hasn't decided yet, ask through the `question` skill first: a level 3 `tradeoff` card. Never write your own guess as the Decision.
+2. Check the decision authority. Record an existing operator decision or one made under explicit delegation without asking again. Otherwise draft the recommendation as Proposed and ask through the available decision channel; do not present it as accepted.
 3. Run `docs.py adr`, fill in the sections, then `docs.py index` and `docs.py check`. Commit the ADR together with the regenerated index.
-4. Status is `Accepted` only after the operator approves.
+4. Status is `Accepted` only with operator approval or explicit delegated authority. Record the source of that authority in Context.
 
 ## supersede
 

@@ -14,12 +14,13 @@ The night loop (`scripts/night-run.sh`, started by the homelab job) runs one fre
    - edit role cards, `CLAUDE.md`, or the skills this session runs on.
 
    A pre-push hook in the checkout refuses pushes to the default branch and branch deletions.
-5. **Questions:** no cards at night, because they would wake the operator. File decision beads as usual and store each card in metadata (`auq_card`); the 08:00 morning card asks them.
+5. **Park before the time box.** A bead may need more than one session. The status line shows `park by <date>T<HH:MM>`, a quarter of the time box before it ends. At each milestone, check the time with `TZ=<the zone in the status line> date +%FT%H:%M`; it compares as text. Once past it, park the bead with a full progress record (step 6 of the slice skill) and end with `BEADWORK-NIGHT: parked <id> -`. A later session continues from the record. If the time box runs out first, the loop kills the session and counts it as a failure.
+6. **Questions:** no cards at night, because they would wake the operator. File decision beads as usual and store each card in metadata (`auq_card`); the 08:00 morning card asks them.
    - **default-ok:** go ahead on the default, label the question `provisional`, and name it in the PR body.
    - **must-ask:** park the bead with a full progress record, and end with `BEADWORK-NIGHT: parked <id> -`.
-6. **End with exactly one status line**, then stop. The loop builds the morning summary from these lines; never write one yourself.
+7. **End with exactly one status line**, then stop. The loop builds the morning summary from these lines; never write one yourself.
    - `BEADWORK-NIGHT: pr <id> <PR URL>`: handed to review.
    - `BEADWORK-NIGHT: fixed <id> <PR URL>`: you only looked after the stack (red CI, review feedback).
-   - `BEADWORK-NIGHT: parked <id> -`: parked with a progress record.
+   - `BEADWORK-NIGHT: parked <id> -`: parked with a progress record (a must-ask question, or the park-by time).
    - `BEADWORK-NIGHT: blocked <id> -`: a tripwire, or two red runs you could not explain.
    - `BEADWORK-NIGHT: nothing - -`: nothing claimable.

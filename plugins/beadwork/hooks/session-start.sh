@@ -2,7 +2,8 @@
 # beadwork SessionStart hook (also runs after /clear and compaction). Prints as session context:
 #   - .beads/PRIME.md through `bd prime`, when the project has one;
 #   - bd memories (short-lived agent context), unless BEADWORK_NO_MEMORIES=1;
-#   - one status line: day/night, ready work, open questions, review queue, away switch.
+#   - one status line: day/night, ready work, open questions, review queue, role, park-by time;
+#     and the away switch.
 # Silent in projects without a .beads/ workspace. Needs bd; jq for the ready count.
 set -u
 cd "${CLAUDE_PROJECT_DIR:-$PWD}" 2>/dev/null || exit 0
@@ -36,8 +37,8 @@ asked=$(bd --readonly count -l human ${role:+-l "asked-by:$role"} --status open 
 review=$(bd --readonly count -l pr-open 2>/dev/null || echo '?')
 away=$(bd --readonly list -l operator:away --json 2>/dev/null | jlen)
 
-night=
-echo "beadwork: $mode ($tz $(TZ=$tz date +%H:%M)) · ready $ready · open questions $asked · PRs in review $review${role:+ · role $role}$night"
+park=${BEADWORK_PARK_BY:+ · park by $BEADWORK_PARK_BY}  # set by the night loop
+echo "beadwork: $mode ($tz $(TZ=$tz date +%H:%M)) · ready $ready · open questions $asked · PRs in review $review${role:+ · role $role}$park"
 if [ -n "$role" ] && [ ! -f ".claude/roles/$role.md" ]; then
   echo "beadwork: role $role has no card at .claude/roles/$role.md; work runs without its path fence or never list."
 fi

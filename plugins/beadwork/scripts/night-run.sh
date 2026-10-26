@@ -14,6 +14,8 @@
 #   nothing    no night-ok bead for the role, ready or blocked (blocked ones may be own-stack)
 #   limit      a session hit the usage limit
 #   failures   two sessions in a row failed or timed out (BEADWORK_BEAD_TIMEBOX, default 2h)
+# Each session gets BEADWORK_PARK_BY (YYYY-MM-DDTHH:MM), a quarter of the time box before it ends: from
+# then on it parks its bead at the next milestone, so the time box rarely has to kill it.
 # Away mode does not stop nights (operator ruling, 2026-10-25).
 #
 # For tests, these override the live values: BEADWORK_NOW (HH:MM), BEADWORK_REVIEW_CAP,
@@ -39,6 +41,8 @@ cfg() {  # a bd config value, or empty when unset
 }
 minutes() { local h=${1%:*} m=${1#*:}; echo $(( 10#$h * 60 + 10#$m )); }
 count() { local n; n=$("$@" 2>/dev/null); [[ "$n" =~ ^[0-9]+$ ]] && echo "$n" || echo 0; }
+seconds() { case $1 in *d) echo $(( ${1%d} * 86400 )) ;; *h) echo $(( ${1%h} * 3600 )) ;; *m) echo $(( ${1%m} * 60 )) ;; *) echo $(( ${1%s} )) ;; esac; }
+park_by() { TZ=$tz date -d "@$(( $(date +%s) + $(seconds "$timebox") * 3 / 4 ))" +%FT%H:%M; }
 
 # The card as the default branch has it: a session must not change its own model or night
 # permission by editing the file. Only a card not yet on the default branch is read as is.
@@ -83,7 +87,7 @@ check() {
   eligible=$(( ready + blocked ))
   [ "$eligible" -gt 0 ] || { echo "stop nothing: no night-ok bead for role $role"; return; }
 
-  echo "go model=$model effort=${effort:-default} eligible=$eligible prs=$pr/$cap"
+  echo "go model=$model effort=${effort:-default} park-by=$(park_by) eligible=$eligible prs=$pr/$cap"
 }
 
 # Pushes to the default branch and branch deletions are refused in this checkout.
@@ -138,8 +142,9 @@ while :; do
   model=$(printf '%s' "$verdict" | sed -n 's/.*model=\([^ ]*\).*/\1/p')
   effort=$(printf '%s' "$verdict" | sed -n 's/.*effort=\([^ ]*\).*/\1/p')
   args=(--model "$model"); [ "$effort" = default ] || args+=(--effort "$effort")
+  park=$(printf '%s' "$verdict" | sed -n 's/.*park-by=\([^ ]*\).*/\1/p')
   out=$(mktemp)
-  CLAUDE_CODE_SYNC_PLUGIN_INSTALL=1 timeout "$timebox" claude -p "/beadwork:slice night" "${args[@]}" > "$out" 2>&1
+  BEADWORK_PARK_BY=$park CLAUDE_CODE_SYNC_PLUGIN_INSTALL=1 timeout "$timebox" claude -p "/beadwork:slice night" "${args[@]}" > "$out" 2>&1
   rc=$?
   cat "$out" >> "$log"
   status=$(grep -o 'BEADWORK-NIGHT: .*' "$out" | tail -1)

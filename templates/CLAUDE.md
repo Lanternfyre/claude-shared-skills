@@ -44,5 +44,5 @@
 - PR: under ~<400> hand-written lines. The body starts with `Bead: <id>` and ends with a `Docs impact:` line.
 - must-ask questions here: destructive actions, plus <project categories>.
 - Beads close on merge by: <the steward | the operator, through /beadwork:review-chunk>.
-- Sub-agents for bead work: <no | allowed for …>; the docs reader walkthrough is always allowed.
+- Sub-agents for bead work: <the default, up to three read-only per bead | none | …>.
 - Roles: one card per role in `.claude/roles/<role>.md`, from claude-shared-skills' `templates/role.md`.

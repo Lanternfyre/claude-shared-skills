@@ -4,7 +4,7 @@ The night loop (`scripts/night-run.sh`, started by the homelab job) runs one fre
 
 1. **Steps 1–2 as by day.** The stack comes first ([stack.md](stack.md)), and you read the bead's progress record and new comments. The away switch does not stop you.
 2. **Claim one night-ok bead.** Add `--label night-ok` to the claim in step 3, also when claiming a bead blocked only by your own stack. If nothing is claimable, end with `BEADWORK-NIGHT: nothing - -`.
-3. **Work it as by day** (steps 4–7): the plan written into the notes before building, the progress record at each milestone, the role fence, a PR on the stack, the merge gate. Nobody approves the plan at night either; the operator reads it in the morning. Up to three read-only sub-agents per bead, as by day; none that write.
+3. **Work it as by day** (steps 4–7): the plan written into the notes before building, the progress record at each milestone, the role fence, the self-review, a PR on the stack, the merge gate. Nobody approves the plan at night either; the operator reads it in the morning. Up to three read-only sub-agents per bead, as by day; none that write.
 4. **Never at night:**
    - merge any PR;
    - push to the main branch;

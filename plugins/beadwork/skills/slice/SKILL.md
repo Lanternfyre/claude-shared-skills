@@ -95,13 +95,15 @@ Run `while sleep 120; do bd hb <id> || break; done` as a background command. Sto
 3. **Promote** what future work needs into Git docs, in this PR, with the `write` skill: architecture decisions → an ADR (the `adr` skill), constraints → `docs/architecture/`, domain rules → `docs/domain/`, terms → `docs/domain/glossary.md`. Notes that only mattered for this bead stay in the bead.
 4. **Docs impact.** Decide what the change does to the docs: contract, behaviour, data, security, operations, architecture, or internal only. If any docs page changed, finish it with the `write` skill (its check and reader walkthrough). A security or public-contract change with no matching docs is `unknown`, never `none`.
 5. **Role fence.** With a role, `${CLAUDE_PLUGIN_ROOT}/scripts/role-check.sh .claude/roles/<role>.md` must pass before any PR opens. It lists files outside the card's paths, judged by the card as the main branch has it. Move such a change out of the PR, or raise it through the `question` skill. Never edit the card to fit.
-6. **Open the PR on the stack:** `gh stack submit --auto --open`, then `gh pr edit <PR URL> --body-file pr.md` for each new PR. A bead that needs more than one PR to stay under the size cap adds a branch per PR in the same way. Each PR body has, in this order:
+6. **Self-review.** Run Claude Code's built-in `code-review` skill on the changes this PR will carry: the commits on your branch since the branch below it in the stack. Fix the findings you agree with, then run verify again if anything changed. Each finding you don't fix goes in the PR body with a reason. The review's own agents don't count against the three sub-agents.
+7. **Open the PR on the stack:** `gh stack submit --auto --open`, then `gh pr edit <PR URL> --body-file pr.md` for each new PR. A bead that needs more than one PR to stay under the size cap adds a branch per PR in the same way. Each PR body has, in this order:
    - `Bead: <id>`;
    - what and why, in plain words;
    - the criteria evidence;
    - any provisional defaults it relies on;
+   - `Self-review:` each finding not fixed, with the reason, or `all findings fixed`;
    - the `Docs impact:` line, plus `Structure:` and `Readers:` if docs changed.
-7. **Hand it to review.** Give each PR a merge gate, then release the bead:
+8. **Hand it to review.** Give each PR a merge gate, then release the bead:
    ```bash
    bd gate create --type=gh:pr --blocks <id> --await-id <PR URL> --reason "PR #<n>"   # one per PR
    bd label add <id> pr-open
@@ -109,8 +111,8 @@ Run `while sleep 120; do bd hb <id> || break; done` as a background command. Sto
    ```
    Then stop the heartbeat. The gates keep the bead out of `bd ready` until every PR merges. Always use the full PR URL, so the check works from any repo.
    **Gate only a real PR.** If submitting printed no PR URL for your branch (check `gh stack view`), create no gate and add no label. Run `gh auth status`, keep the bead claimed, and stop.
-8. **Never `bd close` unmerged work.** The bead closes after its PRs merge, at step 1 of whichever session runs next, or through the project's steward.
-9. Go back to step 1.
+9. **Never `bd close` unmerged work.** The bead closes after its PRs merge, at step 1 of whichever session runs next, or through the project's steward.
+10. Go back to step 1.
 
 ## Stop rules
 

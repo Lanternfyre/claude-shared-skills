@@ -66,6 +66,6 @@ Bad: *"Fix login"*, with acceptance *"login works"*.
 Bad Task, because it says how: *"Add `if (token.ExpiresAt < now) throw` to `RefreshHandler` before it issues the token."* The builder may find a better place, such as the validator every token already passes through.
 
 Good: *"Reject expired refresh tokens"*.
-- **Task:** a refresh token past its expiry still issues an access token. It must be refused (OBJ-2: no session outlives logout).
+- **Task:** a refresh token past its expiry still issues an access token. It must be refused (`OBJ-2`: no session outlives logout).
 - **Guardrails:** only `auth/token/*`. No schema change. One PR, under 150 lines.
 - **Acceptance Criteria:** `RefreshTokenTests.Expired_token_is_rejected` is green and was red before the fix. `verify.sh fast` is green.

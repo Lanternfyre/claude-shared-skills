@@ -7,7 +7,8 @@
   docs.py check             structural health; exit 1 on any problem
 
 `check` covers ADR headers and links, relative Markdown links and their anchors, and ids
-(REQ, NFR, OBJ): each defined once with <a id="..."></a>, every mention resolving. It proves
+(REQ, NFR, OBJ): each defined once with <a id="..."></a>, every mention resolving. Pages are
+every Markdown file Git tracks, plus README.md and docs/ on disk, outside dot-folders. It proves
 structure only, never that a reader can use the docs. Run from the repo root or pass --root.
 Standard library only.
 """
@@ -235,22 +236,39 @@ def anchors(text):
 
 
 def pages(root):
-    readme = root / "README.md"
-    found = [readme] if readme.exists() else []
-    docs = root / "docs"
-    if docs.is_dir():
-        found += sorted(p for p in docs.rglob("*.md") if p.is_file())
-    return found
+    """Every Markdown file Git tracks, plus README.md and docs/ as they are on disk, outside dot-folders.
+
+    Docs often live at the top level or in folder READMEs, so the check follows them there.
+    Outside a Git repo only README.md and docs/ count: a bare tree walk would read node_modules.
+    """
+    try:
+        listed = subprocess.run(["git", "-C", str(root), "ls-files", "-z", "--", "*.md"],
+                                capture_output=True, text=True, check=False)
+    except OSError:
+        listed = None
+    if listed and listed.returncode == 0:
+        found = {root / name for name in listed.stdout.split("\0") if name}
+    else:
+        found = set()
+    found.add(root / "README.md")
+    if (root / "docs").is_dir():
+        found.update((root / "docs").rglob("*.md"))
+    return sorted(p for p in found if p.is_file()
+                  and not any(part.startswith(".") for part in p.relative_to(root).parts))
 
 
 def check_pages(root, page_list, known_adrs):
-    errors, defined, mentions = [], {}, []
-    texts = {p: p.read_text(encoding="utf-8") for p in page_list}
+    errors, defined, mentions, texts = [], {}, [], {}
+    for page in page_list:
+        try:
+            texts[page] = page.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            errors.append(f"{page.relative_to(root)}: not UTF-8, so not checked")
     anchor_cache = {}
 
     def anchors_of(path):
         if path not in anchor_cache:
-            anchor_cache[path] = anchors(texts.get(path) or path.read_text(encoding="utf-8"))
+            anchor_cache[path] = anchors(texts.get(path) or path.read_text(encoding="utf-8", errors="replace"))
         return anchor_cache[path]
 
     for page, text in texts.items():
@@ -284,20 +302,23 @@ def check_pages(root, page_list, known_adrs):
     return errors, set(defined)
 
 
-def check_code_mentions(root, defined):
-    """Requirement ids cited in tracked files outside docs/ must exist too."""
+def check_code_mentions(root, defined, page_list):
+    """Requirement ids cited in tracked files that are not pages must exist too."""
     try:
-        out = subprocess.run(["git", "-C", str(root), "grep", "-I", "-n", "-o", "-E", CODE_ID_PATTERN,
-                              "--", ".", ":(exclude)docs", ":(exclude)README.md"],
+        out = subprocess.run(["git", "-C", str(root), "-c", "core.quotePath=false", "grep", "-I", "-n", "-o", "-E",
+                              CODE_ID_PATTERN, "--", "."],
                              capture_output=True, text=True, check=False).stdout
     except OSError:
         return []
     errors, prose_cache = [], {}
+    checked = {p.relative_to(root).as_posix() for p in page_list}
     for line in out.splitlines():
         place, _, ident = line.rpartition(":")
         name, _, number = place.rpartition(":")
+        if name in checked:
+            continue  # check_pages already read it
         if name.endswith(".md"):
-            # Markdown outside docs/ (skills, CLAUDE.md) may show an id as an example in code.
+            # Markdown in dot-folders (.claude/) may show an id as an example in code.
             if name not in prose_cache:
                 text = (root / name).read_text(encoding="utf-8")
                 prose_cache[name] = {n for n, prose in prose_lines(text) if ident_in(prose)}
@@ -347,11 +368,11 @@ def main(argv=None):
         errors.append(f"{index.relative_to(root)}: out of date, run `docs.py index`")
     page_list = pages(root)
     page_errors, defined = check_pages(root, page_list, set(adrs) if adr_dir.is_dir() else None)
-    errors += page_errors + check_code_mentions(root, defined)
+    errors += page_errors + check_code_mentions(root, defined, page_list)
     for error in errors:
         print(error, file=sys.stderr)
     verdict = "FAILED" if errors else "passed"
-    print(f"docs: structural check {verdict}: {len(page_list)} pages, {len(adrs)} ADRs, "
+    print(f"docs: structural check {verdict}: {len(page_list)} Markdown files, {len(adrs)} ADRs, "
           f"{len(defined)} ids, {len(errors)} problems. Structure only; reader value is not checked.")
     return 1 if errors else 0
 

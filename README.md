@@ -54,7 +54,7 @@ A Claude Code plugin marketplace with the skills our projects share, and the [do
 | [`/docs:glossary [harvest \| check <path>]`](plugins/docs/skills/glossary/SKILL.md): `docs/domain/glossary.md` | operator | none |
 | [`/docs:objectives [sources]`](plugins/docs/skills/objectives/SKILL.md): `docs/product/objectives.md` | operator | none |
 
-[`scripts/docs.py`](plugins/docs/scripts/docs.py) (standard library only) mints ADR and requirement ids and rebuilds the decision index. Its `check` reports structure only, never reader value. It fails on:
+[`scripts/docs.py`](plugins/docs/scripts/docs.py) (standard library only) mints ADR and requirement ids and rebuilds the decision index. Its `check` reads every Markdown file Git tracks outside dot-folders and reports structure only, never reader value. It fails on:
 - an ADR header problem or a one-sided supersede or amend link;
 - a broken relative link or anchor;
 - a requirement or objective id defined twice;

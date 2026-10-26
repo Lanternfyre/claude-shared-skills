@@ -7,7 +7,7 @@ disable-model-invocation: true
 
 # Business objectives
 
-An objective is an outcome for someone, with a measure. It is not a feature. Agents use objectives to judge trade-offs ("which option serves OBJ-2 better?") and to turn down scope that serves none of them.
+An objective is an outcome for someone, with a measure. It is not a feature. Agents use objectives to judge trade-offs ("which option serves `OBJ-2` better?") and to turn down scope that serves none of them.
 
 ## Format (`docs/product/objectives.md`)
 

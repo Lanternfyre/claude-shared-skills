@@ -94,7 +94,7 @@ If a Beads web board serves the same Dolt server, add the new database to the bo
 
 Then run `/docs:init` to bring existing docs onto the layout.
 
-**Roles** (optional): an agent box runs one role, set as `BEADWORK_ROLE` in that box's own homelab values (`extraEnv`). Set per project instead, every box would get the same role. A box with a role claims only beads labelled `role:<role>`; a box without one claims any bead. Each role has a card at `.claude/roles/<role>.md`, copied from [`templates/role.md`](templates/role.md): purpose, allowed paths, model, whether it may run at night, and a never list. The [work loop](plugins/beadwork/skills/slice/SKILL.md) reads the card at the start of every bead. Before opening a PR it runs [`role-check.sh`](plugins/beadwork/scripts/role-check.sh), which lists files outside the card's paths, and opens no PR until the list is empty. This is a check the agent runs, not CI: nothing yet catches a PR opened by other means.
+**Roles** (optional): an agent box runs one role, set as `BEADWORK_ROLE` in that box's own homelab values (`extraEnv`). Set per project instead, every box would get the same role. A box with a role claims only beads labelled `role:<role>`; a box without one claims any bead. Each role has a card at `.claude/roles/<role>.md`, copied from [`templates/role.md`](templates/role.md): purpose, allowed paths, model, effort (optional), whether it may run at night, and a never list. The [work loop](plugins/beadwork/skills/slice/SKILL.md) reads the card at the start of every bead. Before opening a PR it runs [`role-check.sh`](plugins/beadwork/scripts/role-check.sh), which lists files outside the card's paths, and opens no PR until the list is empty. This is a check the agent runs, not CI: nothing yet catches a PR opened by other means.
 
 **Environment** (project `.claude/settings.json` `env`, or the box env):
 
@@ -110,7 +110,7 @@ Then run `/docs:init` to bring existing docs onto the layout.
 ### Night runs
 
 A bead is worked overnight only when all of this holds:
-- **The box has a role** (`BEADWORK_ROLE`), and that role's card says `night: yes` and names a `model`.
+- **The box has a role** (`BEADWORK_ROLE`), and that role's card says `night: yes` and names a `model`. If the card names an `effort`, each session runs at that effort; without one, at Claude's default.
 - **The bead carries `role:<role>` and `night-ok`.** You add these: `bd label add <id> role:<role>`, then `bd label add <id> night-ok`. It must be ready, or blocked only by beads in the box's own [PR stack](plugins/beadwork/skills/slice/stack.md). Epics, decisions and `human` beads never run.
 - **The project has a verify command:** `bd config set custom.beadwork-verify "<command>"`. Optionally set `custom.beadwork-review-cap` (default 12).
 
@@ -118,12 +118,15 @@ The loop is [`scripts/night-run.sh`](plugins/beadwork/scripts/night-run.sh), run
 1. it is between 06:00 and 23:00 (no new bead after the 06:00 cutoff);
 2. PRs in review reach the review cap;
 3. the project has no verify command;
-4. the box has no role, the card is missing, or the card says `night: no` or names no model;
+4. the box has no role, the card is missing, or the card says `night: no`, names no model, or names an effort that isn't a level;
 5. no `night-ok` bead is left for the role;
 6. a session hit the usage limit;
-7. two sessions in a row failed or ran past the two-hour time box.
+7. two sessions in a row failed or ran past the two-hour time box;
+8. the time box (`BEADWORK_BEAD_TIMEBOX`) isn't a whole number with `s`, `m`, `h` or `d`.
 
-It also stops when Beads is unreachable. When it stops, it files a **morning-summary** bead: why it stopped, plus one line per session. A morning card bundling these with the night's held questions is still to come (bead `skills-wp1.5`). Away mode does not stop nights: it only holds questions, as at night.
+Each session gets a park-by time, a quarter of the time box before it ends. After it, the session parks its bead before starting the finish steps, and a later session continues it.
+
+It also stops when Beads is unreachable. When it stops, it files a **morning-summary** bead: why it stopped, plus one line per session. The morning card, `/beadwork:grill morning`, posts these with the night's held questions as one card when the day starts. A homelab job will run it at 08:00 (bead `skills-wp1.6`); until then, run it by hand. Away mode does not stop nights: it only holds questions, as at night.
 
 ## Deliberately not here
 

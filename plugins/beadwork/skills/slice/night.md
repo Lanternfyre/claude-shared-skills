@@ -4,7 +4,7 @@ The night loop (`scripts/night-run.sh`, started by the homelab job) runs one fre
 
 1. **Steps 1–2 as by day.** The stack comes first ([stack.md](stack.md)), and you read the bead's progress record and new comments. The away switch does not stop you.
 2. **Claim one night-ok bead.** Add `--label night-ok` to the claim in step 3, also when claiming a bead blocked only by your own stack. If nothing is claimable, end with `BEADWORK-NIGHT: nothing - -`.
-3. **Work it as by day** (steps 4–7): progress record at each milestone, the role fence, a PR on the stack, the merge gate.
+3. **Work it as by day** (steps 4–7): the plan written into the notes before building, the progress record at each milestone, the role fence, the self-review, a PR on the stack, the merge gate. Nobody approves the plan at night either; the operator reads it in the morning. Up to three read-only sub-agents per bead, as by day; none that write.
 4. **Never at night:**
    - merge any PR;
    - push to the main branch;
@@ -14,12 +14,13 @@ The night loop (`scripts/night-run.sh`, started by the homelab job) runs one fre
    - edit role cards, `CLAUDE.md`, or the skills this session runs on.
 
    A pre-push hook in the checkout refuses pushes to the default branch and branch deletions.
-5. **Questions:** no cards at night, because they would wake the operator. File decision beads as usual and store each card in metadata (`auq_card`); the 08:00 morning card asks them.
+5. **Park before the time box.** A bead may need more than one session. The status line shows `park by <time>`, in UTC, a quarter of the time box before it ends. Check the time with `date -u +%FT%H:%MZ` (it compares as text) at each milestone, and always before starting Finish (step 7 of the slice skill). Once past it, and before any PR of this session is open, park the bead with a full progress record (step 6) and end with `BEADWORK-NIGHT: parked <id> -`. A later session continues from the record. Once a PR is open, finish the hand-off (gate, label, release) instead. If the time box runs out first, the loop kills the session and counts it as a failure.
+6. **Questions:** no cards at night, because they would wake the operator. File decision beads as usual and store each card in metadata (`auq_card`); the 08:00 morning card asks them.
    - **default-ok:** go ahead on the default, label the question `provisional`, and name it in the PR body.
    - **must-ask:** park the bead with a full progress record, and end with `BEADWORK-NIGHT: parked <id> -`.
-6. **End with exactly one status line**, then stop. The loop builds the morning summary from these lines; never write one yourself.
+7. **End with exactly one status line**, then stop. The loop builds the morning summary from these lines; never write one yourself.
    - `BEADWORK-NIGHT: pr <id> <PR URL>`: handed to review.
    - `BEADWORK-NIGHT: fixed <id> <PR URL>`: you only looked after the stack (red CI, review feedback).
-   - `BEADWORK-NIGHT: parked <id> -`: parked with a progress record.
+   - `BEADWORK-NIGHT: parked <id> -`: parked with a progress record (a must-ask question, or the park-by time).
    - `BEADWORK-NIGHT: blocked <id> -`: a tripwire, or two red runs you could not explain.
    - `BEADWORK-NIGHT: nothing - -`: nothing claimable.

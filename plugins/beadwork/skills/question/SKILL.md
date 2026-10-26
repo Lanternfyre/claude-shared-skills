@@ -83,6 +83,8 @@ The session-start line says which it is (`BEADWORK_TZ`, `BEADWORK_DAY`; default 
 
 ## 6. When the answer arrives
 
+Picking up an answer from a question posted earlier (by you, or by the morning card): `${CLAUDE_PLUGIN_ROOT}/scripts/auq-wait.sh <the bead's auq_question_id> 5`. It prints the answer, or exits 3 while you are still waiting.
+
 1. `bd human respond <qid> -r "<option id>: <label>"` closes the question and unblocks parked work.
 2. Record it where it belongs: architecture → an ADR (the `adr` skill), domain rule → `docs/domain/`, requirement → its page in `docs/capabilities/` or `docs/requirements/` (the `write` skill).
 3. If it overturns a provisional default you built on, file a fix bead with `--deps discovered-from:<qid>`.

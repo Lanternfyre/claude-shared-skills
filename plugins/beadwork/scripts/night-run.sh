@@ -10,10 +10,13 @@
 #   cutoff     no new bead from BEADWORK_NIGHT_CUTOFF (06:00) until the day ends (BEADWORK_DAY's end)
 #   cap        PRs in review (pr-open beads) reached custom.beadwork-review-cap (default 12)
 #   verify     the project has no verify command (custom.beadwork-verify): no nights at all
-#   card       no role, no role card, or the card says night: no
+#   card       no role, no role card, the card says night: no, or its effort is not a level
 #   nothing    no night-ok bead for the role, ready or blocked (blocked ones may be own-stack)
 #   limit      a session hit the usage limit
 #   failures   two sessions in a row failed or timed out (BEADWORK_BEAD_TIMEBOX, default 2h)
+#   timebox    BEADWORK_BEAD_TIMEBOX is not a whole number with s, m, h or d
+# Each session gets BEADWORK_PARK_BY (UTC, YYYY-MM-DDTHH:MMZ), a quarter of the time box before
+# it ends: from then on it parks its bead before starting Finish, so the time box rarely kills it.
 # Away mode does not stop nights (operator ruling, 2026-10-25).
 #
 # For tests, these override the live values: BEADWORK_NOW (HH:MM), BEADWORK_REVIEW_CAP,
@@ -39,6 +42,8 @@ cfg() {  # a bd config value, or empty when unset
 }
 minutes() { local h=${1%:*} m=${1#*:}; echo $(( 10#$h * 60 + 10#$m )); }
 count() { local n; n=$("$@" 2>/dev/null); [[ "$n" =~ ^[0-9]+$ ]] && echo "$n" || echo 0; }
+seconds() { case $1 in *d) echo $(( ${1%d} * 86400 )) ;; *h) echo $(( ${1%h} * 3600 )) ;; *m) echo $(( ${1%m} * 60 )) ;; *) echo $(( ${1%s} )) ;; esac; }
+park_by() { date -u -d "@$(( $(date +%s) + $(seconds "$timebox") * 3 / 4 ))" +%FT%H:%MZ 2>/dev/null; }
 
 # The card as the default branch has it: a session must not change its own model or night
 # permission by editing the file. Only a card not yet on the default branch is read as is.
@@ -51,18 +56,26 @@ reviewed_card() {
 
 # Each check prints "go" or "stop <rule>: <reason>".
 check() {
-  local now night_start n cap pr verify model night eligible
+  local now night_start n cap pr verify model effort night eligible
   now=${BEADWORK_NOW:-$(TZ=$tz date +%H:%M)}
   night_start="${day#*-}:00"
   n=$(minutes "$now")
   if [ "$n" -ge "$(minutes "$cutoff")" ] && [ "$n" -lt "$(minutes "$night_start")" ]; then
     echo "stop cutoff: it is $now; no new bead from $cutoff until $night_start"; return; fi
 
+  [[ "$timebox" =~ ^[0-9]+[smhd]?$ ]] || { echo "stop timebox: BEADWORK_BEAD_TIMEBOX=$timebox; use a whole number with s, m, h or d"; return; }
+  [ -n "$(park_by)" ] || { echo "stop timebox: cannot compute a park-by time (needs GNU date)"; return; }
+
   [ -n "$role" ] || { echo "stop card: no BEADWORK_ROLE; nights need a role with a card"; return; }
   local c; c=$(reviewed_card)
   night=$("$here/role-card.sh" "$c" night 2>/dev/null) || { echo "stop card: no readable role card at $card"; return; }
   [ "$night" = yes ] || { echo "stop card: $card says night: $night"; return; }
   model=$("$here/role-card.sh" "$c" model 2>/dev/null) || { echo "stop card: $card has no model"; return; }
+  effort=$("$here/role-card.sh" "$c" effort 2>/dev/null | tr '[:upper:]' '[:lower:]')  # empty: claude's default
+  case "$effort" in ""|low|medium|high|xhigh|max) ;;
+    *) echo "stop card: $card has effort: $effort; use low, medium, high, xhigh or max"; return ;; esac
+  if [ -n "$effort" ] && ! claude --help 2>/dev/null | grep -q -- '--effort'; then
+    echo "stop card: $card sets effort, but this claude has no --effort; update claude"; return; fi
 
   verify=${BEADWORK_VERIFY-$(cfg custom.beadwork-verify)}
   [ -n "$verify" ] || { echo "stop verify: no verify command (bd config set custom.beadwork-verify \"<command>\")"; return; }
@@ -78,7 +91,7 @@ check() {
   eligible=$(( ready + blocked ))
   [ "$eligible" -gt 0 ] || { echo "stop nothing: no night-ok bead for role $role"; return; }
 
-  echo "go model=$model eligible=$eligible prs=$pr/$cap"
+  echo "go model=$model effort=${effort:-default} park-by=$(park_by) eligible=$eligible prs=$pr/$cap"
 }
 
 # Pushes to the default branch and branch deletions are refused in this checkout.
@@ -131,8 +144,11 @@ while :; do
   verdict=$(check); say "$verdict"
   case "$verdict" in stop*) reason=${verdict#stop }; break ;; esac
   model=$(printf '%s' "$verdict" | sed -n 's/.*model=\([^ ]*\).*/\1/p')
+  effort=$(printf '%s' "$verdict" | sed -n 's/.*effort=\([^ ]*\).*/\1/p')
+  args=(--model "$model"); [ "$effort" = default ] || args+=(--effort "$effort")
   out=$(mktemp)
-  CLAUDE_CODE_SYNC_PLUGIN_INSTALL=1 timeout "$timebox" claude -p "/beadwork:slice night" --model "$model" > "$out" 2>&1
+  park=$(park_by); say "session starts; park by $park"
+  BEADWORK_PARK_BY=$park CLAUDE_CODE_SYNC_PLUGIN_INSTALL=1 timeout "$timebox" claude -p "/beadwork:slice night" "${args[@]}" > "$out" 2>&1
   rc=$?
   cat "$out" >> "$log"
   status=$(grep -o 'BEADWORK-NIGHT: .*' "$out" | tail -1)

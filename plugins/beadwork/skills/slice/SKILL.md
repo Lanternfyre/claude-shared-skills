@@ -31,7 +31,7 @@ It runs the merge check, then closes every `pr-open` bead whose PRs have all mer
 - **Review feedback** (PR comments, or the operator asking): fix it in a new PR on top of the stack, gated to the same bead. Never rework a lower PR.
 - **Conflicts** with the main branch: `gh stack rebase`, then `gh stack push`.
 
-Details, limits and the denied-PR case are in [stack.md](stack.md).
+A new PR opened here goes through the Finish steps like any other: verify, the role fence, the self-review, the body and its gate. Details, limits and the denied-PR case are in [stack.md](stack.md).
 
 ## 2. Own questions first
 
@@ -65,19 +65,24 @@ Run `while sleep 120; do bd hb <id> || break; done` as a background command. Sto
 - For a spike bead (`-t spike`), follow [spike.md](spike.md) instead of steps 6–7.
 - For a bug bead (`-t bug`), follow [bug.md](bug.md) during step 6.
 
-## 6. Work
+## 6. Plan, then work
 
+- **Plan before building.** Explore the code and docs the bead touches; read-only sub-agents can help (Stop rules). Then write the plan into the current state (the progress record below): the approach, the alternatives you rejected and why, and the risks. The operator sees it and can steer by comment, but does not approve it, so start building once it is written. A plan already in the notes from an earlier session stands, unless new comments or findings change it.
+- **Re-planning mid-bead is normal.** Update the plan in the notes and log why in a comment. If the new plan no longer fits the bead, re-cut it (the `bead` skill).
 - Stay inside the Guardrails. Anything outside them goes through the `question` skill (a decision) or becomes a surprise bead.
 - **Progress record.** At each milestone (a test passing, a design choice made, a PR opened) and whenever you park:
   1. Replace the current state: `bd update <id> --notes "<the current state>"`. Keep it short, in this shape:
      ```text
      Branch: bead/<id>-<slug> @ <short sha> (pushed)
+     Plan: <the approach, in a sentence or two>
+       Rejected: <alternative>: <why>
+       Risks: <what could go wrong, and how you would notice>
      Done: [x] <step>  [x] <step>
      Next: <one concrete action>     Then: [ ] <step>  [ ] <step>
      Blocked by: <question ids, a red check, a missing fact, or nothing>
      Tried and failed: <dead ends, so nobody repeats them>
      ```
-     The checklist in it is the bead's plan; there are no subtask beads.
+     The checklist carries the plan's steps; there are no subtask beads.
   2. Log the update as a comment: `bd comments add <id> "<what changed since the last update>"`. Comments carry their author and time, and they are the history.
   Findings worth keeping beyond this bead still go into the docs at Finish (step 3).
 - `bd remember` is only for short-lived context the next sessions need, such as "staging DB down until Friday". Never use it for durable knowledge.
@@ -90,13 +95,15 @@ Run `while sleep 120; do bd hb <id> || break; done` as a background command. Sto
 3. **Promote** what future work needs into Git docs, in this PR, with the `write` skill: architecture decisions → an ADR (the `adr` skill), constraints → `docs/architecture/`, domain rules → `docs/domain/`, terms → `docs/domain/glossary.md`. Notes that only mattered for this bead stay in the bead.
 4. **Docs impact.** Decide what the change does to the docs: contract, behaviour, data, security, operations, architecture, or internal only. If any docs page changed, finish it with the `write` skill (its check and reader walkthrough). A security or public-contract change with no matching docs is `unknown`, never `none`.
 5. **Role fence.** With a role, `${CLAUDE_PLUGIN_ROOT}/scripts/role-check.sh .claude/roles/<role>.md` must pass before any PR opens. It lists files outside the card's paths, judged by the card as the main branch has it. Move such a change out of the PR, or raise it through the `question` skill. Never edit the card to fit.
-6. **Open the PR on the stack:** `gh stack submit --auto --open`, then `gh pr edit <PR URL> --body-file pr.md` for each new PR. A bead that needs more than one PR to stay under the size cap adds a branch per PR in the same way. Each PR body has, in this order:
+6. **Self-review.** For each PR, run Claude Code's built-in `code-review` skill (the Skill tool) on that PR's own commits, with the arguments `medium <the branch below>..<your branch>`. `gh stack view` shows the branch below; at the bottom of a stack it is the default branch. Fix the findings you agree with. If that changed anything, run steps 1, 4 and 5 again. Each finding you don't fix goes in the PR body with a reason. The review's own agents don't count against the three sub-agents.
+7. **Open the PR on the stack:** `gh stack submit --auto --open`, then `gh pr edit <PR URL> --body-file pr.md` for each new PR. A bead that needs more than one PR to stay under the size cap adds a branch per PR in the same way. Each PR body has, in this order:
    - `Bead: <id>`;
    - what and why, in plain words;
    - the criteria evidence;
    - any provisional defaults it relies on;
+   - `Self-review:` each finding not fixed, with the reason, or `all findings fixed`;
    - the `Docs impact:` line, plus `Structure:` and `Readers:` if docs changed.
-7. **Hand it to review.** Give each PR a merge gate, then release the bead:
+8. **Hand it to review.** Give each PR a merge gate, then release the bead:
    ```bash
    bd gate create --type=gh:pr --blocks <id> --await-id <PR URL> --reason "PR #<n>"   # one per PR
    bd label add <id> pr-open
@@ -104,11 +111,12 @@ Run `while sleep 120; do bd hb <id> || break; done` as a background command. Sto
    ```
    Then stop the heartbeat. The gates keep the bead out of `bd ready` until every PR merges. Always use the full PR URL, so the check works from any repo.
    **Gate only a real PR.** If submitting printed no PR URL for your branch (check `gh stack view`), create no gate and add no label. Run `gh auth status`, keep the bead claimed, and stop.
-8. **Never `bd close` unmerged work.** The bead closes after its PRs merge, at step 1 of whichever session runs next, or through the project's steward.
-9. Go back to step 1.
+9. **Never `bd close` unmerged work.** The bead closes after its PRs merge, at step 1 of whichever session runs next, or through the project's steward.
+10. Go back to step 1.
 
 ## Stop rules
 
 - On a tripwire in the bead, or two red verify or CI runs you cannot explain:
   `bd update <id> --status blocked --append-notes "tripwire: …"`. File a surprise bead, stop the heartbeat, and stop.
-- One bead at a time. No sub-agent fan-out unless the project allows it. The docs reader walkthrough (one fresh agent per docs change) is the standing exception.
+- One bead at a time.
+- **Sub-agents: read-only, up to three per bead**, attended and at night, unless the project says otherwise. Spawn them with the Agent tool: the `Explore` type to explore code and docs or for research, the `Plan` type for a second opinion on your approach. Neither can edit files, but both can run shell commands, so tell them never to change files, branches or Beads. The docs reader walkthrough counts as one. No sub-agent writes code: one session owns the bead's changes.

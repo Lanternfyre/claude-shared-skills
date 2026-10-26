@@ -1,12 +1,35 @@
 ---
 name: grill
 description: Operator interview. Gather every open question and night summary from Beads, ask them as one auq batch in plain language, record the answers, file the follow-ups and tidy short-lived memories.
+argument-hint: "[morning]"
 disable-model-invocation: true
 ---
 
 # Grill
 
 Runs in an operator session. The goal is one sitting and one card, with every open decision answered or consciously deferred.
+
+**If `$ARGUMENTS` is `morning`, follow only "Morning mode" below.**
+
+## Morning mode
+
+The scheduled job runs `/beadwork:grill morning` when the day starts. It posts **one** card and exits without waiting.
+
+1. Run `${CLAUDE_PLUGIN_ROOT}/scripts/close-merged.sh`.
+2. Collect:
+   - **Night summaries:** `bd --readonly list -l morning-summary --status open --json`, keeping those whose `metadata.auq_question_id` is not set. Their `## Summary` sections give the night in a few lines.
+   - **Held questions:** `bd --readonly list -t decision --status open --json`, keeping those whose `metadata.auq_card` is set and `metadata.auq_question_id` is not. That metadata is the card the agent wrote at night, as JSON text.
+   - **Questions already live in auq** (`auq_question_id` set): never post them again. Count the decision beads among them: posted, not yet recorded.
+3. If there is nothing to post, post nothing and go to step 6.
+4. Make one `ask_user_questions` call with `requester_name: "morning"` and `block_until_complete: false`. The call still waits up to 90 s; a `pending` result is normal here and means nothing more to do. Never wait further, and never post again:
+   - **The night comes first:** a `single_select` "Night summary", with the summaries as plain prose in `context` and the options "Read" and "Something looks wrong". The bead ids go in `agent_notes`.
+   - **Then each held card, as stored:** first the cards whose decision blocks work (it appears in some bead's `blocked_by` in `bd --readonly blocked --json`), then the rest, grouped by `topic:`.
+5. Store the ids at once, because the post is the only copy: on each decision bead and each summary bead, `bd update <id> --set-metadata auq_question_id=<its question id> --set-metadata auq_thread_id=<thread id>`.
+6. Print one line: how many questions you posted, and how many were already posted and not yet recorded. Then exit. Answers are recorded later:
+   - each role's next work-loop session records the answers to its own questions (`slice` step 2, `question` §6);
+   - an operator's `/beadwork:grill` records the rest, including the night-summary answer (§4).
+
+A second morning run finds everything already posted and posts nothing. If the call errors after posting (a 429, for example), the error names the ids. Store those ids. Never post again.
 
 ## 1. Collect
 
@@ -46,7 +69,8 @@ For each answer:
   - domain rule → `docs/domain/`;
   - term → `docs/domain/glossary.md`;
   - feature requirement → `docs/capabilities/`, quality requirement → `docs/requirements/`, objective → `docs/product/objectives.md` (the `write` skill).
-- **Night summaries the operator has read:** `bd close <id> --reason "read in grill"`.
+- **Night summaries the operator has read:** `bd close <id> --reason "read in grill"`, for every summary bead that shares the question id.
+- **"Something looks wrong" on a night summary:** if the answer doesn't already say what, ask in the same thread (`parent_question_id`). File it with the `bead` skill as a bug labelled `surprise`, with `--deps discovered-from:<a summary's id>`. Then close every summary bead that shares that question id.
 
 ## 5. Memory hygiene
 

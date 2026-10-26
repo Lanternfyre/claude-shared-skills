@@ -121,7 +121,10 @@ The loop is [`scripts/night-run.sh`](plugins/beadwork/scripts/night-run.sh), run
 4. the box has no role, the card is missing, or the card says `night: no`, names no model, or names an effort that isn't a level;
 5. no `night-ok` bead is left for the role;
 6. a session hit the usage limit;
-7. two sessions in a row failed or ran past the two-hour time box.
+7. two sessions in a row failed or ran past the two-hour time box;
+8. the time box (`BEADWORK_BEAD_TIMEBOX`) isn't a whole number with `s`, `m`, `h` or `d`.
+
+Each session gets a park-by time, a quarter of the time box before it ends. After it, the session parks its bead before starting the finish steps, and a later session continues it.
 
 It also stops when Beads is unreachable. When it stops, it files a **morning-summary** bead: why it stopped, plus one line per session. The morning card, `/beadwork:grill morning`, posts these with the night's held questions as one card when the day starts. A homelab job will run it at 08:00 (bead `skills-wp1.6`); until then, run it by hand. Away mode does not stop nights: it only holds questions, as at night.
 

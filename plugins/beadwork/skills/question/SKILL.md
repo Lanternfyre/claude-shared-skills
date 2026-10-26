@@ -5,20 +5,23 @@ description: Raise a decision or a surprise with the operator through Beads and 
 
 # Raising a question or a surprise
 
-`<id>` is the bead you are working on. `<role>` is the role in the session-start status line, or `operator` if the line names none. Write commands literally, with the placeholders filled in; the permission check refuses shell variables and `$(…)`. The project's instructions (CLAUDE.md, `.beads/PRIME.md`) win over this skill.
+Use the [host runtime guide](../../runtime.md) for invocation, helper paths and startup context.
+
+`<id>` is the bead you are working on. `<role>` is the role in the session-start status line, or `operator` if the line names none. Fill command placeholders with actual values; use literal commands when the host's permission checks require them. User instructions and existing authorization take precedence; project rules (`AGENTS.md` or `CLAUDE.md`, and `.beads/PRIME.md`) fill in the boundaries. Do not ask again for an action already authorized.
 
 ## 1. Surprise or decision?
 
-- **Surprise:** a bug, a missing fact or a broken assumption outside your bead. File it, then carry on unless it blocks you:
+- **Surprise:** unrelated work discovered during your bead. File it, then carry on unless it blocks you. A necessary adjacent fix within the approved outcome can stay in the current bead (the `bead` skill). Use bug only for an actual defect with reproduction evidence; missing information may need a task or investigation instead:
   `bd create -t bug -l surprise --deps discovered-from:<id> --body-file s.md --validate --silent`
   A bug's Steps to Reproduce is a Given/When/Then scenario that fails today.
-- **Decision:** a choice with more than one reasonable answer that the operator owns. A code-level choice with an obvious convention is not a question: decide it and say so in the PR.
-- **Undefined or ambiguous domain term:** a decision with `topic:glossary`. The answer goes into `docs/domain/glossary.md`.
+- **Implementation choice:** approach, internal structure, test names, routine decomposition and outcome-preserving adjacent fixes belong to the agent. Choose from the evidence and record consequential choices in the bead or PR; no question bead is needed merely because alternatives exist.
+- **Decision:** a choice the operator owns, such as changed requirements, public contracts, security boundaries or material cost/commitments. Check existing authorization before filing.
+- **Domain term:** reuse the documented or unambiguous established meaning. Ask with `topic:glossary` when ambiguity changes behavior or the business meaning; absence from the glossary alone is not a blocker. Record established meanings directly.
 
 ## 2. Classify
 
-- **must-ask:** destructive actions (data loss, force push, deleting history, deleting or rotating secrets, publishing outside the repo), plus the categories the project lists. Never proceed on a default. The label is `must-ask`, unless the project names its own.
-- **default-ok:** everything else. At night, or when unanswered, you may go ahead on the default.
+- **must-ask:** unresolved changes to approved intent or protected boundaries, and actions requiring permission that has not been granted (for example data loss, rewriting shared history, changing secrets or external publication), plus the project's categories. Never proceed on a default. The label is `must-ask`, unless the project names its own.
+- **default-ok:** a reversible choice within delegated authority where operator preference would help but is not required. State the default and proceed immediately, by day or night. Keep the question open for correction; silence is not approval. Routine implementation choices need no card.
 - **Level:** impact × how hard it is to undo.
 
 | Level | When | Card |
@@ -26,7 +29,7 @@ description: Raise a decision or a surprise with the operator through Beads and 
 | 1 | small, easy to undo | `single_select` |
 | 2 | the wording alone is ambiguous | `single_select` with a snippet or scenario in `context`, or `code_choice` with "(recommended)" in a label |
 | 3 | real costs either way | `tradeoff` (pros, cons, risks) |
-| 4 | big or hard to undo | propose a spike: file it at level 4 with the variants. Once the operator approves, the spike runs as a bead and comes back as a level-3 question with numbers. |
+| 4 | big or hard to undo | ask for the decision, or propose a bounded spike when evidence is missing. Run authorized investigation without another approval; the consequential action still waits for authorization. |
 
 ## 3. File the decision bead
 
@@ -58,33 +61,26 @@ It prints the new bead's id; that is `<qid>` below.
 
 The visible text is for someone on a phone who has forgotten everything:
 - The first sentence of `context` says what changes for the operator. Then recap what happened, what you checked, and your prior: what you believe and why.
-- Plain text only: no file paths, line numbers, commit hashes, bead or issue ids, and no markdown.
+- Lead with the consequence in plain language. Put ids and paths in `agent_notes` on phone cards; include a short code or API example when it is needed to decide. In a technical session, use the detail and format the operator prefers.
 - Give a concrete example where it helps: a snippet, a scenario, a before/after.
 - Offer 2–4 options with the recommendation starred (`recommended: true`). Name the default. Each option says, in the operator's terms, what it costs and what it rules out.
-- Add a "Go one level deeper" option. If it is chosen, ask again one level up in the same thread (`parent_question_id`). Set `expects_followup: true` only on a question whose answer you will branch on at once, because it makes the call return before the rest are answered.
+- Offer "Go one level deeper" when further investigation would change the decision. Follow up in the same thread (`parent_question_id`). Set `expects_followup: true` only on a question whose answer you will branch on at once.
 - Bead ids, paths, rule ids and evidence go in `agent_notes`, which only select-type questions carry. `agent_notes` is hidden from the operator, so never put anything there they would need in order to decide.
 - `requester_name` is `<role>@<host>`. Send one card per sitting: batch everything you can ask now.
 
-## 5. Day or night
+## 5. Ask without stalling independent work
 
-The session-start line says which it is (`BEADWORK_TZ`, `BEADWORK_DAY`; default Europe/Warsaw, 08–23). If it says the operator is away, treat the day as night.
+The session-start line says day/night and away. Day means post now; night or away means store the card as `auq_card` metadata for the morning batch. If the project uses a steward, store it for the steward instead. The classification above controls what may proceed, independent of the clock.
 
-- **Day:** post the card. If the project says a steward posts cards, store it instead with `bd update <qid> --set-metadata 'auq_card=<the card JSON on one line>'`. Record the ids: `bd update <qid> --set-metadata auq_question_id=<ids> --set-metadata auq_thread_id=<id>`. Wait up to 30 min: if the call returns `pending`, run `${CLAUDE_PLUGIN_ROOT}/scripts/auq-wait.sh <ids> 1800` as a background command. It survives the server's rate limit, where a bare `auq await` gives up. No answer means night handling.
-- **Night, or unanswered:**
-  - **default-ok:** proceed on the default, run `bd label add <qid> provisional`, and name it in the PR body.
-  - **must-ask:** park the bead:
-    ```bash
-    git push origin HEAD:bead/<id>-wip
-    bd dep add <id> <qid>
-    bd unclaim <id> --reason "waiting on <qid>"
-    ```
-    Then stop its heartbeat and take the next ready bead.
-- Never re-post a question that is still live; await its ids. If `ask_user_questions` itself returns an error after posting (a 429 from the server, for example), the questions are usually live already: the error names their ids, so wait on those.
+- **Day:** use auq `ask_user_questions` with `block_until_complete: false`, then store the returned question and thread ids immediately. If auq is unavailable, use the session's question tool or chat; record the question and any answer in Beads, without inventing auq ids. A missing optional inbox does not stop authorized implementation.
+- **default-ok:** record the default and reversal cost, run `bd label add <qid> provisional`, and continue. Name defaults with material consequences in the delivery evidence. Do not wait 30 minutes just to exercise authority you already have.
+- **must-ask:** do independent work on the same bead while possible. When only dependent work remains, stop and collect delegates, save progress (push WIP only if authorized), add the blocker with `bd dep add <id> <qid>`, then release with `bd unclaim <id> --if-assignee <actor> --reason "waiting on <qid>"`. Stop the heartbeat and take other ready work. If ownership was lost, follow the slice skill's ownership recovery instead of writing or releasing. If the operator is actively deciding and a short wait helps, wait; never treat elapsed time as an answer.
+- **No duplicates:** if `auq_question_id` is already set, inspect or await that question. If posting errors after creating the card, store the ids from the error. If the result is ambiguous, inspect the inbox before retrying; do not re-post blindly.
 
 ## 6. When the answer arrives
 
-Picking up an answer from a question posted earlier (by you, or by the morning card): `${CLAUDE_PLUGIN_ROOT}/scripts/auq-wait.sh <the bead's auq_question_id> 5`. It prints the answer, or exits 3 while you are still waiting.
+For a question with auq ids, pick up an answer posted earlier (by you, or by the morning card): `"<plugin-root>/scripts/auq-wait.sh" <the bead's auq_question_id> 5`. It prints the answer, or exits 3 while you are still waiting.
 
-1. `bd human respond <qid> -r "<option id>: <label>"` closes the question and unblocks parked work.
+1. Confirm the answer actually settles the question; free text or "go deeper" may need a follow-up. Then `bd human respond <qid> -r "<answer and source>"` closes it and unblocks parked work. Answers given directly in the session count too.
 2. Record it where it belongs: architecture → an ADR (the `adr` skill), domain rule → `docs/domain/`, requirement → its page in `docs/capabilities/` or `docs/requirements/` (the `write` skill).
 3. If it overturns a provisional default you built on, file a fix bead with `--deps discovered-from:<qid>`.

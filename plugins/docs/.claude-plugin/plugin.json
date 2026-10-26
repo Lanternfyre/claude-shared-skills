@@ -1,6 +1,6 @@
 {
   "name": "docs",
-  "version": "0.4.1",
+  "version": "0.6.0",
   "description": "The documentation standard: people-first pages, ADRs, glossary and objectives, with structure checks and reader walkthroughs.",
   "author": {
     "name": "Adrian Jutrowski"

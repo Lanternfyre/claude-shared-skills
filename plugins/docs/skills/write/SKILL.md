@@ -6,6 +6,8 @@ allowed-tools: Bash(python3 ${CLAUDE_PLUGIN_ROOT}/scripts/docs.py *)
 
 # Writing documentation people can use
 
+Use the [host runtime guide](../../runtime.md) for invocation, helper paths and startup context.
+
 Docs are for people: the operator, engineers joining a project, people running systems, external users. Agents write and maintain the docs and read the same pages, but they are not the audience.
 
 **If something helps agents but makes a page harder for a person to understand, find or maintain, don't do it, or keep it off the page.** When readability and truth pull apart, keep the truth and fix the presentation, or state the uncertainty plainly.
@@ -13,7 +15,7 @@ Docs are for people: the operator, engineers joining a project, people running s
 ## Before writing: the gate
 
 1. **Reader and question.** Who needs this page? What do they already know, and what will they do next? A page answers one question or supports one task. If you can't name the reader and the question, don't write the page.
-2. **Existing answer.** Search `docs/` first. Improving the canonical page beats adding one. Never state a fact twice; link to its home.
+2. **Existing answer.** Search the established docs home first. Improve the canonical page before adding one. Link to detailed facts; a short summary is useful when it helps the reader understand the page without unnecessary navigation.
 3. **Smallest useful form.** Pick one kind from [kinds.md](kinds.md). Never create several kinds for one feature by default. A small change usually needs a paragraph in an existing page.
 4. **A home readers can reach.** Put the page in the section below that fits it. Create a section folder only with its first real page, and give the section a `README.md`: one paragraph on what the section is for, then its pages. Link the new page from that README, so a reader can get from the root README to the page without knowing any path.
 
@@ -35,7 +37,7 @@ Docs are for people: the operator, engineers joining a project, people running s
 | `docs/decisions/` | ADRs; its `README.md` is the generated index (the `adr` skill) |
 | `docs/planning/` | Roadmap, open questions; never phrased as built |
 
-A repo with its own established layout keeps it. Move pages only with the operator's approval.
+A repo with its own established layout keeps it. A request to reorganize docs authorizes the necessary moves and link repairs; do not ask twice. Routine in-scope moves are allowed. Ask before an unrequested broad reorganization or a move that changes a published URL contract.
 
 ## Writing
 
@@ -58,39 +60,39 @@ A repo with its own established layout keeps it. Move pages only with the operat
 
 ## Ids
 
-- **Requirements:** `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/docs.py id REQ` for a feature requirement (in `capabilities/`), or `id NFR` for a quality requirement (in `requirements/`). Define each id once with `<a id="…"></a>` and never reuse one. Pages and code comments may cite it.
+- **Requirements:** `python3 "<plugin-root>/scripts/docs.py" id REQ` for a feature requirement (in `capabilities/`), or `id NFR` for a quality requirement (in `requirements/`). Define each id once with `<a id="…"></a>` and never reuse one. Pages and code comments may cite it.
 - **Objectives:** `OBJ-n`, owned by the operator (`/docs:objectives`).
 - **ADRs:** the `adr` skill.
 
 ## Critical pages
 
-These pages need the operator's review in the PR:
+Substantive changes to these pages need their owner's review before integration, unless the owner has delegated that review:
 - architecture;
 - security guidance;
 - runbooks with destructive steps;
 - business claims;
 - anything written for external readers.
 
-The operator owns them, unless the page names another owner with an `Owner:` line under its title. Other pages carry no owner, date or status boilerplate.
+The operator owns them, unless the page names another owner with an `Owner:` line under its title. Typo, formatting and link repairs that preserve meaning do not need a separate owner sign-off. Existing approval of the exact content counts. Other pages carry no owner, date or status boilerplate.
 
 ## Contradictions
 
-When a requirement, an ADR and the code disagree, never edit one to match the others. Raise it through the `question` skill as a decision bead (must-ask if approved intent would change). Its Question section lists:
+When sources disagree, identify which source has authority for this question. Fix a demonstrable implementation bug against clear approved intent, or correct descriptive docs against verified behavior, within task scope. Preserve accepted ADR history. If the authoritative intent is ambiguous, or the proposed fix would change it, raise a decision through the `question` skill (must-ask for changed approved intent). Its Question section lists:
 - the subject;
 - each source, what it says, and its version or commit;
 - what conflicts, and the risk;
 - what needs deciding;
 - what remains to verify.
 
-Approved requirements stand until the operator decides. ADRs stay as history.
+Approved requirements stand until the operator changes them. Existing authorization to revise a requirement counts; record it rather than asking again. ADRs stay as history. With no Beads/question plugin, record unresolved decisions in the project's existing channel; do not install a tracker just to edit a page.
 
 ## Finish
 
-1. Run `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/docs.py check`. It checks structure only.
-2. Do the reader walkthrough in [walkthrough.md](walkthrough.md).
-3. Put three separate lines in the PR body. Never merge them into one verdict; a passing check alone never makes the docs ready.
+1. Run `python3 "<plugin-root>/scripts/docs.py" check`. It checks structure only.
+2. Select the proportional reader check in [walkthrough.md](walkthrough.md). A small factual edit needs a focused check; new pages, navigation or consequential guidance need an independent walkthrough when available.
+3. Report these separately in the PR body, or the task evidence for local delivery. A passing structure check alone never makes the docs ready.
    ```text
    Docs impact: updated (<pages>) | needs review (<why>) | unknown (<what wasn't checked>) | none
    Structure: docs.py check passed | failed (<count>)
-   Readers: <n>/<m> tasks passed; <the failed task, and where the reader got stuck>
+   Readers: focused check (<what was checked>) | walkthrough <n>/<m> tasks passed (<failures>) | not run (<reason and remaining review>)
    ```

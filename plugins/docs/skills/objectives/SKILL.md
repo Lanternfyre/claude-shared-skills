@@ -7,7 +7,9 @@ disable-model-invocation: true
 
 # Business objectives
 
-An objective is an outcome for someone, with a measure. It is not a feature. Agents use objectives to judge trade-offs ("which option serves `OBJ-2` better?") and to turn down scope that serves none of them.
+Use the [host runtime guide](../../runtime.md) for invocation, helper paths and startup context.
+
+An objective is an outcome for someone, with a measure. It is not a feature. Agents use objectives to judge trade-offs ("which option serves `OBJ-2` better?") and to identify work that needs a clearer purpose. Explicitly requested maintenance can proceed without inventing an objective id.
 
 ## Format (`docs/product/objectives.md`)
 
@@ -42,7 +44,7 @@ Collect the stated goals and the implied ones (why does this epic exist?). Separ
 
 ## 3. Ask in one batch
 
-Use auq `ask_user_questions`, or AskUserQuestion when the operator is in this session.
+Use the available question tool or chat for unresolved product choices. Preserve goals already confirmed by the operator without asking again.
 - **For each draft:** `single_select` with "As written ★", "Reword", "Not an objective" and "Go one level deeper". The `context` says where the draft came from.
 - **Priority** (`ranked`), when there are more than three objectives.
 - **Measures** (`form`: metric, threshold, by when), where they are unclear.
@@ -53,5 +55,5 @@ Write in business language, with no file paths in the visible text.
 ## 4. Write and link
 
 - Write the file. Only what the operator confirmed is `committed`.
-- When the project uses Beads, label each epic `objective:OBJ-n`. List the epics that serve no objective for the operator: either drop them, or there is a missing objective.
+- When an epic serves an existing objective, label it `objective:OBJ-n`. Flag unclear purpose for product work; maintenance and explicitly requested work need not invent a business objective.
 - New terms go to `/docs:glossary`.

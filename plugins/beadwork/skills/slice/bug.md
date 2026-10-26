@@ -1,24 +1,12 @@
 # Bug bead
 
-The bead's Steps to Reproduce say what is wrong. Change no code until a command goes red on it.
+Establish evidence for the reported failure and verify the fix against that behavior. Prefer a failing regression test before changing production code, using the smallest reliable feedback loop: a test, fixture-backed CLI request, replay, harness or stress case.
 
-1. **Build a feedback loop first.** Find one command that drives the real bug path and asserts the reported symptom, not merely "it didn't crash". In rough order of preference:
-   - a failing test at a seam that reaches the bug;
-   - a curl or CLI script run against a fixture;
-   - a replay of a captured payload;
-   - a throwaway harness;
-   - a fuzz loop, for "sometimes wrong";
-   - `git bisect run`, when the bug appeared between two known states.
+- For an obvious defect, reproduce, fix and verify directly. Ranked hypotheses and instrumentation help when the cause is unclear; do not invent a fixed number of theories.
+- Minimize a complex reproduction enough to isolate the cause. Keep the original scenario to check the final fix.
+- If reproduction needs unavailable access or data, record what is known and what remains unverified. Continue useful inspection or safe investigation; ask for the missing input only when it blocks progress. Do not claim an unobserved red-to-green result.
+- Add regression coverage where feasible, including meaningful sibling cases. Do not weaken tests or add assertions that merely mirror the implementation. Separate red/fix commits are optional; follow the project's commit convention.
+- For intermittent or performance bugs, compare against a measured baseline with comparable inputs and conditions.
+- Remove temporary instrumentation and test artifacts. Delivery evidence states the cause, reproduction, verification and any remaining limits.
 
-   Make it fast and deterministic: pin the time, seed the randomness, isolate files and network. For a flaky bug, raise the reproduction rate (loop it, parallelise, add stress) until you can debug it. If you can't build a loop, stop: note what you tried, and ask through the `question` skill for access or a captured artifact. Don't form theories without a loop.
-2. **Minimise.** Cut inputs, steps and config one at a time while the loop stays red, until every remaining element is needed.
-3. **Hypothesise.** Note 3–5 ranked hypotheses on the bead before testing any. Each makes a prediction: "if X is the cause, changing Y makes the bug vanish."
-4. **Instrument** one variable at a time, each probe testing a prediction. Tag every debug log with one prefix (`[DEBUG-a4f2]`) so cleanup is one grep. For performance bugs, measure a baseline first, then bisect.
-5. **Gate.**
-   - Find a seam where a test reproduces the bug as it really happens. If there is none, that is the finding: file a surprise bead, because the design keeps this bug from being locked down.
-   - Commit the failing test on its own, then the fix as a separate commit. Fix only what makes the test pass.
-   - Add tests for the sibling cases the bug implies: other error paths, the adjacent input.
-   - Re-run the original, un-minimised loop. The minimal test passing doesn't prove the reported problem is gone.
-6. **Clean up.** Remove the tagged debug logs and throwaway harnesses. The PR names the hypothesis that proved true.
-
-Redact secrets (`<REDACTED>`) in everything you show or note. Never weaken or delete an existing test to make yours pass.
+Keep secrets out of captured payloads, logs and notes. A bug that exposes missing test seams may justify a follow-up; it does not require abandoning a verified fix.

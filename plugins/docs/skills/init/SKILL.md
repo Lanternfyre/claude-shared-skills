@@ -1,11 +1,13 @@
 ---
 name: init
-description: Bring a repo onto the documentation standard. Inventory what exists, propose the smallest layout its real content and readers need, move pages only after approval, and seed the landing README and CLAUDE.md rules.
+description: Bring a repo onto the documentation standard. Inventory what exists, propose the smallest layout its real content and readers need, preserve established layouts unless reorganization is authorized, and seed the landing README and project instructions.
 disable-model-invocation: true
 allowed-tools: Bash(python3 ${CLAUDE_PLUGIN_ROOT}/scripts/docs.py *)
 ---
 
 # Documentation init
+
+Use the [host runtime guide](../../runtime.md) for invocation, helper paths and startup context.
 
 Read the `write` skill first; its layout and rules are the target.
 
@@ -19,7 +21,7 @@ Read the `write` skill first; its layout and rules are the target.
   - runbooks in comments or scripts;
   - OpenAPI exports.
 - Note who reads them today, and the conventions the repo already follows.
-- **Never reorganise an established repo without approval.** A template update is not permission to move content.
+- Preserve an established layout unless the user authorized reorganization. A template update alone does not authorize moving content. Existing authorization counts; do not request it again.
 
 ## 2. Propose
 
@@ -29,7 +31,7 @@ Draft the smallest set of sections this repo's real content and readers need now
 - old ADRs → `docs/decisions/`, re-headed by the `adr` skill, with their text unchanged;
 - a long README → a short landing page plus the pages it links.
 
-Post the proposal as one auq `tasks` card. Each move is a task with a `required` or `optional` tag. The card's `context` says what a reader will find, where, after the move. Move nothing before approval.
+If the requested work already authorizes these moves, record the plan and apply it. Otherwise ask about the broad reorganization as one batch through the available question tool or chat, showing what readers will find and where. Improve in-scope content while that decision is pending.
 
 ## 3. Apply (after approval)
 
@@ -37,7 +39,7 @@ Post the proposal as one auq `tasks` card. Each move is a task with a `required`
 2. **Landing README:** what this is, how to start, and where to find things, as task-named links: Start, Build, Operate, Reference, Architecture, Decisions. Link only sections that exist.
 3. **Section READMEs:** each section gets one, with a purpose paragraph and its pages.
 4. **Fix links:** run `docs.py index` if ADRs moved, then `docs.py check` until it passes.
-5. **CLAUDE.md:** add the knowledge-map table and the two documentation lines from claude-shared-skills' `templates/CLAUDE.md`, and record the adopted standard (`docs` plugin version).
+5. **Project instructions:** add the knowledge map and documentation rules to `AGENTS.md` (Codex), `CLAUDE.md` (Claude Code), or their shared source. Use the repository's project template and record the adopted `docs` plugin version. Preserve existing instructions.
 6. **CI (optional):** copy `docs.py` to `tools/` and run `python3 tools/docs.py check` there.
 
 ## 4. Prove it

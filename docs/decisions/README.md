@@ -4,4 +4,6 @@
 
 | Decision | Status | Date | Id |
 |---|---|---|---|
-| [Adopt the human-first documentation standard](ADR-20261025-110438-9a48-adopt-the-human-first-documentation-standard.md) | Accepted | 2026-10-25 | ADR-20261025-110438-9a48 |
+| [Adopt the human-first documentation standard](ADR-20261025-110438-9a48-adopt-the-human-first-documentation-standard.md) | Superseded by [ADR-20261026-134412-fb40](ADR-20261026-134412-fb40-give-agents-authority-within-approved-outcomes.md) | 2026-10-25 | ADR-20261025-110438-9a48 |
+| [Give agents authority within approved outcomes](ADR-20261026-134412-fb40-give-agents-authority-within-approved-outcomes.md) | Accepted | 2026-10-26 | ADR-20261026-134412-fb40 |
+| [Share one skill source across Claude Code and Codex](ADR-20261026-154820-f051-share-one-skill-source-across-claude-code-and-codex.md) | Accepted | 2026-10-26 | ADR-20261026-154820-f051 |

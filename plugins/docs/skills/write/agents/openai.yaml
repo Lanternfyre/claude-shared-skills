@@ -1,0 +1,3 @@
+interface:
+  display_name: "Write"
+  short_description: "Write useful docs and check the reader route"

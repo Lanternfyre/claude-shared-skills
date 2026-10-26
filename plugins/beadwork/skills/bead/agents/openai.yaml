@@ -1,0 +1,3 @@
+interface:
+  display_name: "Bead"
+  short_description: "Write and re-cut verifiable Beads work items"

@@ -7,7 +7,11 @@ disable-model-invocation: true
 
 # Grill
 
+Use the [host runtime guide](../../runtime.md) for invocation, helper paths and startup context.
+
 Runs in an operator session. The goal is one sitting and one card, with every open decision answered or consciously deferred.
+
+Use the available question channel. auq supplies durable cards and ids when installed; an attended grill can use the session's question tool or chat instead, recording answers in Beads without inventing auq ids. Missing auq does not block the discussion. The scheduled morning mode needs an authorized durable inbox; if unavailable, report held questions once and leave them queued.
 
 **If `$ARGUMENTS` is `morning`, follow only "Morning mode" below.**
 
@@ -15,7 +19,7 @@ Runs in an operator session. The goal is one sitting and one card, with every op
 
 The scheduled job runs `/beadwork:grill morning` when the day starts. It posts **one** card and exits without waiting.
 
-1. Run `${CLAUDE_PLUGIN_ROOT}/scripts/close-merged.sh`.
+1. For PR/stack delivery, run `"<plugin-root>/scripts/close-merged.sh"`; skip it in `BEADWORK_DELIVERY=local`. A sweep failure leaves review state unresolved but does not prevent collecting questions.
 2. Collect:
    - **Night summaries:** `bd --readonly list -l morning-summary --status open --json`, keeping those whose `metadata.auq_question_id` is not set. Their `## Summary` sections give the night in a few lines.
    - **Held questions:** `bd --readonly list -t decision --status open --json`, keeping those whose `metadata.auq_card` is set and `metadata.auq_question_id` is not. That metadata is the card the agent wrote at night, as JSON text.
@@ -55,7 +59,7 @@ Make one `ask_user_questions` call with `requester_name: "grill"`, then store ea
 
 ## 3. Wait
 
-Blocking is normal. If the call returns `pending`, or an error after posting (the error names the ids), run `${CLAUDE_PLUGIN_ROOT}/scripts/auq-wait.sh <ids> 14400` as a background command and end the turn; the answers resume the work. Never re-post to get past an error.
+Blocking is normal. If the call returns `pending`, or an error after posting (the error names the ids), run `"<plugin-root>/scripts/auq-wait.sh" <ids> 14400` as a background command and end the turn; the answers resume the work. Never re-post to get past an error.
 
 ## 4. Record
 

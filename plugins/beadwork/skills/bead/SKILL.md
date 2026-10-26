@@ -5,6 +5,8 @@ description: Write, split or review a Beads work item (task, bug, chore, spike, 
 
 # Writing a bead
 
+Use the [host runtime guide](../../runtime.md) for invocation, helper paths and startup context.
+
 A bead is a contract with an agent that has none of your context. If it cannot be finished from its text and the docs it links, it is not ready.
 
 ## Sections
@@ -18,13 +20,16 @@ Never how: the approach belongs to whoever builds it. If it matters, link the AD
 Links: the requirement, objective (OBJ-n), ADR or spec it implements.
 
 ## Guardrails
-- Scope fence: the paths or areas it may touch; what must not change.
+- Expected scope: the paths or areas likely to change. List protected paths and
+  behavior separately: those are hard boundaries, not estimates.
 - Banned approaches, and any project rule that applies.
 - Size: expected PR count and hand-written lines, under the project's cap.
 
 ## Acceptance Criteria
-Machine-checkable only: a named test or command and its expected result, a gate
-that goes green, a benchmark scenario if a hot path changes, a demo if a user sees it.
+Observable behavior and its verification: a test or command and its expected result,
+a benchmark when performance matters, or a reader/demo task for human-facing work.
+Name an existing test when useful; do not require a future test's exact name before
+the builder has explored the code. Human judgment needs an explicit reviewer and check.
 
 ## Evidence
 Empty at creation. Filled at close: PRs, CI runs, demo, benchmark deltas.
@@ -34,7 +39,7 @@ Empty at creation. Filled at close: PRs, CI runs, demo, benchmark deltas.
 
 Per type:
 - **bug:** add `## Steps to Reproduce` as a Given/When/Then scenario that fails today.
-- **spike:** add `## Variants` (2–3) and `## Measurements` (identical for every variant). Results go in the notes.
+- **spike:** add `## Variants` (the plausible alternatives) and `## Measurements` (comparable for each variant), with a time/resource budget. Results go in the notes.
 - **epic:** `## Goal`, `## Scope`, `## Success Criteria` (the exit table) and `## Tripwires` (what stops the epic). When to make one, labels, tripwires and closing: [epic.md](epic.md).
 - **decision:** use the `question` skill.
 
@@ -42,7 +47,9 @@ Per type:
 
 One bead is one checkable outcome, with PRs small enough to review. It may take several sessions, because the progress record carries it across, and several PRs stacked on each other. Split only when the outcome itself splits, at seams where each child can be verified on its own. Make the parent an epic (`--parent`) or chain the children with deps. Never split into "write the code" and "write the tests".
 
-**Re-cut instead of forcing.** If a bead turns out too big, wrongly cut, or built on a wrong assumption, don't push it through. Propose the re-cut through the `question` skill: the new beads with their outcomes, and which criteria move to them. Until the operator answers, the bead keeps every Acceptance Criterion. Build what serves them, and park the bead when nothing more can be done. Never move or weaken a criterion on a default.
+**Re-cut instead of forcing.** The owner may split, combine or reorder work within the approved outcome without another approval. Record why, map every original Acceptance Criterion to its new owner, and update the dependencies and evidence links. Preserve protected boundaries, explicit ordering and every promised behavior; never weaken a criterion or mark unfinished work complete. Coordinate before changing another owner's work. Ask through the `question` skill only when the re-cut changes approved intent, commitments or a protected boundary.
+
+**Necessary adjacent fixes are allowed.** Expected paths guide discovery; they are not a ban on a small prerequisite fix elsewhere. If the fix is necessary for this outcome, preserves the approved contract and crosses no protected boundary, include it, verify it and explain the scope expansion. File unrelated improvements separately. Explicit project prohibitions and permissions still apply.
 
 To cut a whole plan, epic or milestone into beads, follow [cutting.md](cutting.md).
 

@@ -1,6 +1,6 @@
 # <Project>
 
-<!-- Starter from claude-shared-skills/templates. Fill the <…> slots and delete what doesn't apply. -->
+<!-- Shared project rules: use as CLAUDE.md, AGENTS.md, or one source with a symlink. Fill the <…> slots and delete what does not apply. -->
 
 ## Documentation
 
@@ -21,28 +21,32 @@
 | Architectural decisions | `docs/decisions/` (the `adr` skill) |
 | How-tos, runbooks, reference, first-run tutorial | `docs/guides/`, `docs/operate/`, `docs/reference/`, `docs/start/` |
 | Roadmap, open questions | `docs/planning/` |
-| Current task progress | Beads: status and `bd note` |
+| Current task progress | Beads: status and current notes |
 | Blockers and task dependencies | Beads: deps and decision beads |
 | Findings during investigation | Beads first: notes, surprise beads |
 | Short-lived agent context | `bd remember`, tidied at each grill |
 | Discoveries worth keeping | Promoted into the docs above, in the PR that found them |
 | Agent behavioural instructions | This file |
 
-- Beads is the only tracker: no TODO files, and no plan files in the repo.
+- Beads owns live execution status. Keep design plans and roadmaps in docs and link them; do not duplicate bead status in handover files or plan tables.
+- Assume the installed skills and tracker are available. Setup is a separate task, not a repeated phase of every plan.
 - Nothing durable lives only in chat or in memory.
 - A section folder exists only once it has a real page.
 
 ## Language
 
 - Use the terms in `docs/domain/glossary.md` in code, tests, beads and PRs.
-- A missing or ambiguous term is a question (`topic:glossary`), not a guess.
-- Work serves an objective in `docs/product/objectives.md`, and names it (`OBJ-n`).
+- Reuse established domain meanings and record missing glossary entries. Ask when ambiguity changes behavior; ordinary internal names are the agent's choice.
+- Link an existing objective when relevant. Authorized maintenance need not wait for a new objective.
 
 ## Work (beadwork plugin)
 
 - Verify before every PR: `<command>`.
-- PR: under ~<400> hand-written lines. The body starts with `Bead: <id>` and ends with a `Docs impact:` line.
-- must-ask questions here: destructive actions, plus <project categories>.
-- Beads close on merge by: <the steward | the operator, through /beadwork:review-chunk>.
-- Sub-agents for bead work: <the default, up to three read-only per bead | none | …>.
-- Roles: one card per role in `.claude/roles/<role>.md`, from claude-shared-skills' `templates/role.md`.
+- Delivery: `BEADWORK_DELIVERY=<pr | stack | local>`; default `pr`. This selects mechanics, not permission to push or merge. Existing authorization: <what may be pushed/integrated, by whom>.
+- Review size: target ~<400> hand-written lines per PR; split at useful seams. Mark a hard cap explicitly if this project needs one. Delivery evidence includes `Bead: <id>` and `Docs impact:`.
+- must-ask here: changes to approved intent, protected boundaries or external actions without authorization, plus <project categories>. Existing authorization counts. Reversible preferences within delegated authority may proceed on a recorded default.
+- Agents may re-cut approved work while preserving every acceptance criterion, and make necessary adjacent fixes outside expected paths. Explain and verify scope expansions; unrelated work stays separate.
+- Protected paths/actions: <explicit boundaries; expected role paths are advisory>.
+- Beads close after verified integration: PRs through `close-merged.sh`; local delivery by <owner>. Epic closure: <delegated after evidenced criteria and required sign-offs | operator>.
+- Delegation: <implementation and review allowed | project restriction>. One bead owner integrates results and maintains evidence; isolate independent writes and serialize mutations of shared resources.
+- Roles: one card per role in `.beads/roles/<role>.md` (legacy `.claude/roles/` also works), from claude-shared-skills' `templates/role.md`.

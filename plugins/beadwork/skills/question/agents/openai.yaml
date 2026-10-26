@@ -1,0 +1,3 @@
+interface:
+  display_name: "Question"
+  short_description: "Resolve operator choices without stalling work"

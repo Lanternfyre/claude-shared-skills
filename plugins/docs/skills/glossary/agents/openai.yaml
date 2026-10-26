@@ -1,0 +1,6 @@
+interface:
+  display_name: "Glossary"
+  short_description: "Maintain clear, consistent domain terminology"
+
+policy:
+  allow_implicit_invocation: false

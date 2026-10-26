@@ -7,14 +7,16 @@ disable-model-invocation: true
 
 # Ubiquitous language
 
-The aim: one word per concept and one concept per word inside a bounded context, used the same way in conversation, docs, beads, code, tests and UI. The glossary is the referee, and agents read it before they name anything.
+Use the [host runtime guide](../../runtime.md) for invocation, helper paths and startup context.
+
+The aim: one word per concept and one concept per word inside a bounded context, used the same way in conversation, docs, beads, code, tests and UI. The glossary records domain meaning. Agents consult relevant entries when domain naming matters; ordinary internal identifiers do not require a glossary entry.
 
 - No argument, or `harvest`: steps 1–4.
 - `check <target>`: step 5 only.
 
 ## Entry format (`docs/domain/glossary.md`)
 
-The file is loaded whole into agent context, so keep each entry to six lines or fewer.
+Keep entries concise and load the relevant context; the whole glossary need not enter every session.
 
 ```markdown
 ## Settlement
@@ -51,7 +53,7 @@ Draft every entry yourself from the evidence. Ask the operator only for what the
 
 ## 3. Ask in one batch
 
-Use auq `ask_user_questions`, or AskUserQuestion when the operator is in this session.
+Use auq when installed, or the host's question tool/chat in an attended session.
 - **For each synonym cluster:** "Which word do we use for <a plain description>?" The options are the candidate words, each noting where it is used today, plus "These are different things" (`expects_followup`).
 - **For each homonym:** "Is a <word> in <context A> the same thing as in <context B>?"
 - **For each definition you had to guess:** confirm or correct it, with the example shown.
@@ -62,7 +64,7 @@ Write in business language. Star the recommendation. No file paths in the visibl
 
 - Update the entries and keep the index sorted. Rejected words go under **Not**.
 - Code that still uses a rejected word gets one bead per rename seam (`topic:glossary`). Never do a big-bang rename.
-- A term that comes from a requirement links its objective in **Serves**. Run `/docs:objectives` if the objective doesn't exist yet.
+- Link an existing objective in **Serves** when relevant. A missing objective can be captured for later product work; do not block an established term's definition to create one.
 
 ## 5. Check
 

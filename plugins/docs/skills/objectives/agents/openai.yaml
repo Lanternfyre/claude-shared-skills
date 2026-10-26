@@ -1,0 +1,6 @@
+interface:
+  display_name: "Objectives"
+  short_description: "Capture measurable, agreed product objectives"
+
+policy:
+  allow_implicit_invocation: false

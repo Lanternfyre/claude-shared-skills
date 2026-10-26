@@ -17,11 +17,11 @@ Use the available question channel. auq supplies durable cards and ids when inst
 
 ## Morning mode
 
-The scheduled job runs `/beadwork:grill morning` when the day starts. It posts **one** card and exits without waiting.
+An operator or scheduler runs `/beadwork:grill morning` when the operator becomes available. It posts **one** card and exits without waiting.
 
-1. For PR/stack delivery, run `"<plugin-root>/scripts/close-merged.sh"`; skip it in `BEADWORK_DELIVERY=local`. A sweep failure leaves review state unresolved but does not prevent collecting questions.
+1. When PR work exists, run `"<plugin-root>/scripts/close-merged.sh"`, regardless of the default selected for new work. A sweep failure leaves review state unresolved but does not prevent collecting questions.
 2. Collect:
-   - **Night summaries:** `bd --readonly list -l morning-summary --status open --json`, keeping those whose `metadata.auq_question_id` is not set. Their `## Summary` sections give the night in a few lines.
+   - **Legacy night summaries (if any):** `bd --readonly list -l morning-summary --status open --json`, keeping those whose `metadata.auq_question_id` is not set. Their `## Summary` sections give the night in a few lines.
    - **Held questions:** `bd --readonly list -t decision --status open --json`, keeping those whose `metadata.auq_card` is set and `metadata.auq_question_id` is not. That metadata is the card the agent wrote at night, as JSON text.
    - **Questions already live in auq** (`auq_question_id` set): never post them again. Count the decision beads among them: posted, not yet recorded.
 3. If there is nothing to post, post nothing and go to step 6.

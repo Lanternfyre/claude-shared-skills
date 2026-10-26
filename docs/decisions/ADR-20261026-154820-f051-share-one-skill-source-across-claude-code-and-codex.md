@@ -1,10 +1,10 @@
 ---
 adr: ADR-20261026-154820-f051
 title: "Share one skill source across Claude Code and Codex"
-status: Accepted
+status: Superseded
 date: 2026-10-26
 supersedes: []
-superseded_by:
+superseded_by: ADR-20261026-173924-ce2c
 amends: []
 amended_by: []
 refs: [ADR-20261026-134412-fb40]

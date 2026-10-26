@@ -1,8 +1,17 @@
 # Delivery modes
 
-Use the project's existing delivery model. `BEADWORK_DELIVERY` selects `pr` (default), `stack` or `local`; set it in the project or box environment so attended sessions and the night runner agree. Mode is not authorization for external actions. Existing instructions such as "never push" still apply.
+`BEADWORK_DELIVERY=auto` is the default. Choose delivery from the project's conventions and the work's dependencies; record the choice in the bead's progress. No question is needed for ordinary delivery mechanics within existing authorization. Explicit `pr`, `stack` or `local` settings override automatic choice for new work. Mode is not authorization for external actions; instructions such as "never push" still apply.
 
-When resuming work, preserve its recorded branch and delivery mode. A default change does not authorize migrating an open stack or turning local work into a remote PR. Configure existing stack projects explicitly before their next scheduled run.
+| Situation | Delivery |
+|---|---|
+| Existing bead/branch | Preserve its recorded method |
+| Independent change with PR review | Independent PR |
+| Dependent changes benefiting from separate reviews | Stack, when the project's tools support it |
+| Project uses local milestone integration | Local integration under its existing authorization |
+
+Use an independent PR as the fallback. Unavailable GitHub access may delay publication without stopping useful local implementation; it does not silently change the agreed delivery or permit closing unintegrated work.
+
+When resuming work, preserve its recorded branch and delivery mode. A default change does not authorize migrating an open stack or turning local work into a remote PR.
 
 ## Independent PRs (`pr`)
 
@@ -32,4 +41,4 @@ Use the project's branch and commit conventions. No GitHub access, remote push o
 - If implementation is complete but integration still needs review/authorization, stop delegates and record the branch, commit, evidence and who must act. Hand off atomically with `bd update <id> --if-assignee <actor> --status blocked --assignee "" --add-label integration-pending`, then stop the heartbeat. It remains open and unavailable for fresh claims. Do not use `bd unclaim` here: it resets status to open. If the installed CLI lacks guarded updates, retain the claim and report the required handoff instead of briefly exposing the bead as ready.
 - When integration is authorized, resume that bead, integrate, verify the resulting state, remove `integration-pending` and close it. Never silently reset or replace another owner's changes.
 
-The night runner counts `integration-pending` beads against the same review cap as PR work. Its `complete` result means verified local integration; `review` means saved work awaiting integration.
+The runner counts both `integration-pending` and `pr-open` beads against one review cap, deduplicated by bead ID. Its `complete` result means verified local integration; `review` means saved work awaiting integration.

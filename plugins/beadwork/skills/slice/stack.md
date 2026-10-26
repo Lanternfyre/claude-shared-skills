@@ -1,6 +1,6 @@
 # Stacked PRs
 
-Use this only for `BEADWORK_DELIVERY=stack`. It requires the project's installed `gh stack` extension; do not install or replace the delivery tooling mid-task without need. Independent PRs and local integration are described in [delivery.md](delivery.md).
+Use this when stack delivery was selected or is already recorded for the bead. It requires the project's installed `gh stack` extension; do not install or replace the delivery tooling mid-task without need. Independent PRs and local integration are described in [delivery.md](delivery.md).
 
 ## Build
 

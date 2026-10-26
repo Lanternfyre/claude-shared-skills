@@ -119,6 +119,11 @@ if engine == 'codex':
     if os.environ.get('TEST_USAGE'):
         print(json.dumps({'type': 'error', 'message': 'usage limit reached'}), flush=True)
         sys.exit(1)
+if engine == 'claude' and os.environ.get('TEST_CLAUDE_ERROR'):
+    print(json.dumps({'type': 'result', 'subtype': 'success', 'is_error': True,
+                      'result': os.environ['TEST_CLAUDE_ERROR'], 'session_id': session,
+                      'num_turns': 1}), flush=True)
+    sys.exit(int(os.environ.get('TEST_MODEL_EXIT', '1')))
 time.sleep(step.get('sleep', .02))
 if os.environ.get('TEST_MODEL_EXIT'):
     sys.exit(int(os.environ['TEST_MODEL_EXIT']))
@@ -457,6 +462,30 @@ class Worker(TempRepo):
     def test_usage_exhaustion_does_not_spin(self):
         self.env['TEST_USAGE'] = '1'
         self.worker(code=1)
+        self.assertEqual(len(self.data()['models']), 1)
+        self.assertTrue(self.state()['recovery_required'])
+
+    def test_claude_weekly_limit_on_stdout_is_reported_before_exit_code(self):
+        self.env['TEST_CLAUDE_ERROR'] = "You've hit your weekly limit · resets 1am (UTC)"
+        result = self.worker('claude', code=1)
+        self.assertIn('model usage exhausted; inspect', result.stderr)
+        self.assertIn('.jsonl', result.stderr)
+        self.assertNotIn('resets 1am', result.stderr)
+        state = self.state()
+        self.assertEqual(len(self.data()['models']), 1)
+        self.assertEqual(state['bead'], 'test-1')
+        self.assertTrue(state['recovery_required'])
+        self.assertEqual(self.data()['beads'][0]['assignee'], state['actor'])
+        self.assertFalse(any('unclaim' in call['args'] for call in self.data()['calls']))
+        errors, = (self.root / '.git/beadwork').glob('turn-*.stderr')
+        self.assertEqual(errors.read_text(), '')
+
+    def test_generic_model_exit_reports_both_output_paths(self):
+        self.env['TEST_MODEL_EXIT'] = '1'
+        result = self.worker('claude', code=1)
+        self.assertIn('model exited 1', result.stderr)
+        self.assertIn('.stderr', result.stderr)
+        self.assertIn('.jsonl', result.stderr)
         self.assertEqual(len(self.data()['models']), 1)
         self.assertTrue(self.state()['recovery_required'])
 

@@ -568,11 +568,24 @@ class Runner:
                     self.interrupted.wait(.03)
         self.terminate_group()
         self.save(worker_pgid=None)
-        if code:
-            raise StopRun(f'model exited {code}; inspect {errors}')
+        native = None
         if self.args.engine == 'claude':
             try:
                 native = json.loads(output.read_text())
+            except ValueError:
+                pass
+            # Claude can exit 1 with an error envelope on stdout and empty
+            # stderr. Classify only that envelope, never quoted tool output.
+            if isinstance(native, dict) and native.get('type') == 'result' and native.get('is_error') is True:
+                message = native.get('result')
+                if isinstance(message, str) and re.search(
+                        r'usage limit|weekly limit|daily limit|rate limit|quota exceeded|insufficient_quota', message, re.I):
+                    raise StopRun(f'model usage exhausted; inspect {output}')
+                raise StopRun(f'Claude reported an error; inspect {output}')
+        if code:
+            raise StopRun(f'model exited {code}; inspect {errors} and {output}')
+        if self.args.engine == 'claude':
+            try:
                 if not isinstance(native, dict) or native.get('type') != 'result' or native.get('is_error'):
                     raise ValueError('Claude reported an error')
                 self.capture_session(native.get('session_id'))

@@ -38,3 +38,5 @@ The runner verifies the checkpoint, ownership and recorded handoff before procee
 ## Recovery
 
 A clean handoff can resume from its saved state. After an unclean stop, inspect the runner's state and logs, exact bead and checkout. Establish that old writers have stopped and reconcile ownership before restarting. Do not steal another worker's claim or clear an unresolved recovery marker just to make a run start. Record recovery facts in the bead. The runtime guide documents the supported recovery commands.
+
+For a safely parked run launched with an explicit `--bead`, resolve the blocker and use `--recover` in the same worktree before the original deadline. The runner rechecks the saved checkpoint and readiness before reclaiming that bead; a plain restart does not reclaim it.

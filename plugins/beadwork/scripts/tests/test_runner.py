@@ -291,6 +291,35 @@ class Worker(TempRepo):
         for name in ('actor', 'bead', 'deadline', 'session'):
             self.assertEqual(first[name], second[name])
 
+    def test_exact_parked_bead_recovers_with_original_actor_session_and_deadline(self):
+        self.env['TEST_NATIVE_SESSION_REGISTRY'] = '1'
+        self.steps({'outcome': 'parked', 'next': 'stop'}, {'outcome': 'complete', 'next': 'stop'})
+        self.worker('claude', '--bead', 'test-1', '--max-beads', '1')
+        parked = self.state()
+        self.assertEqual((parked['bead'], parked['phase'], parked['completed']),
+                         ('test-1', 'parked', 0))
+        self.assertEqual(self.data()['beads'][0]['assignee'], '')
+        refused = self.worker('claude', code=1)
+        self.assertIn('use --recover', refused.stderr)
+        self.assertEqual(len(self.data()['models']), 1)
+
+        self.worker('claude', '--recover')
+        first, second = self.data()['models']
+        for name in ('actor', 'bead', 'deadline', 'session'):
+            self.assertEqual(first[name], second[name])
+        self.assertEqual(self.state()['completed'], 1)
+        self.assertEqual(self.data()['beads'][0]['status'], 'closed')
+
+    def test_exact_parked_recovery_does_not_take_another_workers_claim(self):
+        self.steps({'outcome': 'parked', 'next': 'stop'})
+        self.worker('codex', '--bead', 'test-1', '--max-beads', '1')
+        db = self.data()
+        db['beads'][0].update(status='in_progress', assignee='other-worker')
+        self.db.write_text(json.dumps(db))
+        self.worker('codex', '--recover', code=1)
+        self.assertEqual(len(self.data()['models']), 1)
+        self.assertEqual(self.data()['beads'][0]['assignee'], 'other-worker')
+
     def test_saved_pause_cannot_silently_override_a_new_explicit_queue_selection(self):
         self.steps({'outcome': 'working', 'next': 'stop'})
         self.worker()

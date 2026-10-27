@@ -42,6 +42,8 @@ The runner records the native conversation ID, unique worker actor, current bead
 
 A clean pause resumes using the recorded state. An unclean stop leaves recovery required: inspect the exact bead, notes, diff and logs, establish that old writers and delegates stopped, and reconcile ownership. Then use the runner's `--recover` option. Recovery is evidence-based and does not require a new operator approval for actions already authorized. Never delete the state file to hide an unresolved claim. An expired budget requires explicit `--new-budget` under a newly authorized run budget; ordinary resumption cannot silently extend it.
 
+When an explicitly selected `--bead` is safely parked, the runner keeps that exact bead in its state without counting it as completed. After the blocker is resolved, use `--recover` from the same worktree. It checks the checkpoint, confirms the bead is open and independently ready, and reclaims it with the same actor and remaining deadline. A plain restart cannot silently re-claim a parked bead. Queue runs without `--bead` continue to treat a park as a handoff and may select other work.
+
 Run these commands from the same worktree, using the saved engine (`claude` or `codex`). The checkout selects its saved run; do not supply a different bead, role or queue filter.
 
 ```bash

@@ -170,7 +170,8 @@ class Runner:
                     or (previous['session_id'] is not None and
                         (not isinstance(previous['session_id'], str) or
                          not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_-]{0,127}', previous['session_id'])))
-                    or (previous['bead'] and not previous['recovery_required'] and previous['phase'] != 'paused')):
+                    or (previous['bead'] and not previous['recovery_required']
+                        and previous['phase'] not in ('paused', 'parked'))):
                 raise StopRun(f'invalid run state; reconcile {self.path}')
         names = ('model', 'effort', 'mode', 'delivery', 'role', 'label', 'bead', 'max_beads')
         # Old preclaim failures held no bead and started no writer. They are safe
@@ -183,6 +184,8 @@ class Runner:
                   bool(previous and previous.get('phase') == 'paused' and previous.get('bead')))
         if no_claim:
             resume = False
+        if previous and previous.get('phase') == 'parked' and not resume:
+            raise StopRun('saved exact bead is parked; use --recover within its original budget')
         if self.args.fresh_session and not resume:
             raise StopRun('fresh-session recovery needs saved exact-bead state')
         if resume:
@@ -239,7 +242,8 @@ class Runner:
                 self.state['bead'] = self.bead = None
             elif not self.has_checkpoint(current):
                 raise StopRun('released handoff recovery needs saved notes and its exact checkpoint')
-            elif (self.args.new_budget and current.get('status') == 'open'
+            elif ((self.args.new_budget or (self.args.recover and previous['phase'] == 'parked'))
+                    and current.get('status') == 'open'
                     and not current.get('assignee') and self.allowed(current)):
                 ready = self.bd('ready', '--limit', '0', '--json', readonly=True)
                 if not isinstance(ready, list) or not any(isinstance(row, dict) and row.get('id') == self.bead for row in ready):
@@ -709,6 +713,12 @@ class Runner:
                 result = self.turn()
                 self.save(last_result=result)
                 print(json.dumps(result), flush=True)
+                if result['outcome'] == 'parked' and self.args.bead:
+                    # An exact-bead run may resume this safely released bead
+                    # with --recover, its original actor and remaining budget.
+                    self.lease_active = False
+                    self.save(phase='parked', recovery_required=False)
+                    return 0
                 if result['outcome'] != 'working':
                     self.lease_active = False
                     handled = self.state.get('handled', []) + [self.bead]
